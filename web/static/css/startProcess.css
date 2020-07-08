@@ -1,0 +1,61 @@
+ul li{
+    list-style: none;
+    font-size: 16px;color: #333333;
+}
+a{
+    text-decoration: none;
+    color: #333333;
+
+}
+a:hover{
+    text-decoration: underline;
+}
+p{ font-size: 16px;color: #333333;}
+
+
+  .clearfix:after{
+      content:"";
+      height:0;
+      line-height:0;
+      display:block;
+      clear:both;
+      visibility:hidden;
+  }
+
+.clearfix{
+    zoom:1;
+}
+/*@font-face {
+    font-family: '../font/iconfont';
+    src: url('../font/iconfont.eot');
+    src: url('../font/iconfont.eot?#iefix') format('embedded-opentype'),
+    url('../font/iconfont.woff2') format('woff2'),
+    url('../font/iconfont.woff') format('woff'),
+    url('../font/iconfont.ttf') format('truetype'),
+    url('../font/iconfont.svg#iconfont') format('svg');
+}
+.iconfont {
+    font-family: "iconfont" !important;
+    font-size: 16px;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}*/
+/*公共声明*/
+
+.listing{ width: 100%;
+     box-sizing: border-box;    float: left; padding: 15px 25px;}
+.listing-title{ font-size: 16px;  color: #333;  font-weight: 500;  }
+
+.listing-con{ width: 100%; box-sizing: border-box;  }
+.listing-con li{ width: 22%; float: left; margin-left: 3%; height: 40px; line-height: 40px;
+    box-sizing: border-box; border-radius: 5px; border: 1px solid #efefef; font-size: 12px; margin-top: 10px;
+
+}
+.listing-con li a{ font-size: 12px; color: #333;padding: 0 10px; text-decoration: none;}
+.listing-con li:nth-child(4n+1){ margin-left: 0;}
+
+.listing-con li:hover{ border: 1px solid #3296f5; box-sizing: border-box; box-shadow: 2px 2px 2px rgba(25,114,198,0.1);
+
+}
+.listing-con li:hover a{ color: #3296f5; }
