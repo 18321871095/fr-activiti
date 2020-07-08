@@ -8,6 +8,8 @@ import com.fr.decision.system.bean.message.MessageUrlType;
 import com.fr.decision.webservice.v10.message.MessageService;
 import com.fr.decision.webservice.v10.user.UserService;
 import com.fr.web.core.A.E;
+import org.activiti.bpmn.model.StartEvent;
+import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.task.Task;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,7 +24,7 @@ import java.util.Map;
 public class sendMessage {
 
     public static void getSendMessageUser(TaskService taskService, String processInstanceId,
-     JdbcTemplate jdbcTemplate,String proname,Map<String,String> para,String state, List<Task> lists) throws Exception {
+     JdbcTemplate jdbcTemplate,String proname,Map<String,String> para,String state, List<Task> lists,String  processDefinitionID,RepositoryService repositoryService) throws Exception {
         try {
             //发送消息
             String startPeople = para.get("startPeople") == null ? "" : para.get("startPeople").toString();
@@ -79,9 +81,16 @@ public class sendMessage {
                 }
                 jdbcTemplate.update("update act_ru_task set DESCRIPTION_='1' where ID_=?", new Object[]{assigneeList.get(i).get("taskid")});
             }
-            UserService user = UserService.getInstance();
-            for(String s:assignes){
-                sendSmsAndEmail(s, proname, state, user, startPeople, startTime);
+            //判断是否需要短信与邮件
+            StartEvent startEventObject = ProcessUtils.getStartEventObject(processDefinitionID, repositoryService);
+            String sendmessage = ProcessUtils.getStartNodeExectionName(startEventObject, "sendmessage");
+            String sendemail = ProcessUtils.getStartNodeExectionName(startEventObject, "sendemail");
+           // System.out.println("sendmessage:"+sendmessage+","+"sendemail:"+sendemail);
+            if("true".equals(sendmessage) || "true".equals(sendemail)){
+                UserService user = UserService.getInstance();
+                for(String s:assignes){
+                    sendSmsAndEmail(s, proname, state, user, startPeople, startTime,sendmessage,sendemail);
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -102,44 +111,47 @@ public class sendMessage {
         }
     }
 
-    public  static void sendSmsAndEmail(String assign,String proname,String state,UserService user,String startPeople,String startTime) throws Exception {
+    public  static void sendSmsAndEmail(String assign,String proname,String state,UserService user,
+                                        String startPeople,String startTime,String sendmessage,String sendemail) throws Exception {
         User userByUserName = user.getUserByUserName(assign);
         if(userByUserName!=null){
-            if(userByUserName.getMobile()!=null || "".equals(userByUserName.getMobile())){
-               // System.out.println("是否支持短信发送===========>"+TransmissionKit.isSmsFuncSupport());
-                if(TransmissionKit.isSmsFuncSupport()){
-                    SingleSmsBody.Builder builder = SingleSmsBody.newBuilder();
-                    com.fr.json.JSONObject json=new com.fr.json.JSONObject();
-                    builder.mobile(userByUserName.getMobile());
-                    if("1".equals(state)){
-                        builder.templateCode("127");
-                        json.put("#proname#",proname);
-                        json.put("#startpeople#",startPeople);
-                        json.put("#starttime#",startTime);
-                    }else{
-                        //逾期的
-                        builder.templateCode("125");
-                        json.put("#proname#",proname);
+            if("true".equals(sendmessage)){
+                if(userByUserName.getMobile()!=null || "".equals(userByUserName.getMobile())){
+                    // System.out.println("是否支持短信发送===========>"+TransmissionKit.isSmsFuncSupport());
+                    if(TransmissionKit.isSmsFuncSupport()){
+                        SingleSmsBody.Builder builder = SingleSmsBody.newBuilder();
+                        com.fr.json.JSONObject json=new com.fr.json.JSONObject();
+                        builder.mobile(userByUserName.getMobile());
+                        if("1".equals(state)){
+                            builder.templateCode("127");
+                            json.put("#proname#",proname);
+                            json.put("#startpeople#",startPeople);
+                            json.put("#starttime#",startTime);
+                        }else{
+                            //逾期的
+                            builder.templateCode("125");
+                            json.put("#proname#",proname);
+                        }
+
+                        builder.para(json);
+                        builder.needRecord(true);
+                        boolean a= TransmissionKit.sendSms(builder.build());
                     }
-
-
-                    builder.para(json);
-                    builder.needRecord(true);
-                    boolean a= TransmissionKit.sendSms(builder.build());
-
                 }
             }
-            if(userByUserName.getEmail()!=null || "".equals(userByUserName.getEmail())){
-                EmailBody.Builder email = EmailBody.newBuilder();
-                if("1".equals(state)){
-                    email.subject("任务待办提醒");
-                    email.bodyContent("您有个"+proname+"任务需要处理，请您尽快办理");
-                }else{
-                    email.subject("任务逾期提醒");
-                    email.bodyContent("您有个"+proname+"任务即将过期，请您尽快办理");
+            if("true".equals(sendemail)){
+                if(userByUserName.getEmail()!=null || "".equals(userByUserName.getEmail())){
+                    EmailBody.Builder email = EmailBody.newBuilder();
+                    if("1".equals(state)){
+                        email.subject("任务待办提醒");
+                        email.bodyContent("您有个"+proname+"任务需要处理，请您尽快办理");
+                    }else{
+                        email.subject("任务逾期提醒");
+                        email.bodyContent("您有个"+proname+"任务即将过期，请您尽快办理");
+                    }
+                    email.toAddress("");
+                    boolean b = TransmissionKit.sendEmail(email.build());
                 }
-                email.toAddress("");
-                boolean b = TransmissionKit.sendEmail(email.build());
             }
         }
 
@@ -149,7 +161,7 @@ public class sendMessage {
 
 
     public static void getSendMessageUserOnZhuanBan(TaskService taskService,String taskid,String proname,
-                                                    String startPeople,String startTime) throws Exception {
+                                                    String startPeople,String startTime,RepositoryService repositoryService) throws Exception {
         try {
             Task task = taskService.createTaskQuery().taskId(taskid).singleResult();
             if (task != null) {
@@ -164,14 +176,20 @@ public class sendMessage {
                 }else{
                     poeple=userByUserName.getRealName();
                 }
-                sendSmsAndEmail(task.getAssignee(),proname,"1",user,poeple,startTime);
+                //判断是否需要短信与邮件
+                StartEvent startEventObject = ProcessUtils.getStartEventObject(task.getProcessDefinitionId(), repositoryService);
+                String sendmessage = ProcessUtils.getStartNodeExectionName(startEventObject, "sendmessage");
+                String sendemail = ProcessUtils.getStartNodeExectionName(startEventObject, "sendemail");
+                if("true".equals(sendmessage) || "true".equals(sendemail)){
+                    sendSmsAndEmail(task.getAssignee(),proname,"1",user,poeple,startTime,sendmessage,sendemail);
+                }
             }
         }
         catch (Exception e){
 
         }
     }
-    public static void getSendMessageUserOnAddHuiQian(Task task,String proname,JdbcTemplate jdbcTemplate,String startPeople,String startTime) throws Exception {
+    public static void getSendMessageUserOnAddHuiQian(Task task,String proname,JdbcTemplate jdbcTemplate,String startPeople,String startTime,RepositoryService repositoryService) throws Exception {
         try {
             send(task.getAssignee(), proname + ":" + task.getId(),
                     "您有一个流程名为：" + proname + "的待处理任务", task.getId(), URLEncoder.encode(proname, "utf-8"),
@@ -185,14 +203,21 @@ public class sendMessage {
             }else{
                 poeple=userByUserName.getRealName();
             }
-            sendSmsAndEmail(task.getAssignee(),proname,"1",user,poeple,startTime);
+            //判断是否需要短信与邮件
+            StartEvent startEventObject = ProcessUtils.getStartEventObject(task.getProcessDefinitionId(), repositoryService);
+            String sendmessage = ProcessUtils.getStartNodeExectionName(startEventObject, "sendmessage");
+            String sendemail = ProcessUtils.getStartNodeExectionName(startEventObject, "sendemail");
+            if("true".equals(sendmessage) || "true".equals(sendemail)) {
+                sendSmsAndEmail(task.getAssignee(), proname, "1", user, poeple, startTime,sendmessage,sendemail);
+            }
         }
         catch (Exception e){
 
         }
     }
+
     public static void getSendMessageDueTimeCreateTask(String assignee,String proname,String taskid,String processDefinitionId,String processInstanceId,
-                                                       JdbcTemplate jdbcTemplate,String startPeople,String startTime) throws Exception {
+                                                       JdbcTemplate jdbcTemplate,String startPeople,String startTime,RepositoryService repositoryService) throws Exception {
         try {
             send(assignee, proname + ":" + taskid,
                     "您有一个流程名为：" + proname + "的待处理任务", taskid, URLEncoder.encode(proname, "utf-8"),
@@ -206,7 +231,13 @@ public class sendMessage {
             }else{
                 poeple=userByUserName.getRealName();
             }
-            sendSmsAndEmail(assignee,proname,"1",user,poeple,startTime);
+            //判断是否需要短信与邮件
+            StartEvent startEventObject = ProcessUtils.getStartEventObject(processDefinitionId, repositoryService);
+            String sendmessage = ProcessUtils.getStartNodeExectionName(startEventObject, "sendmessage");
+            String sendemail = ProcessUtils.getStartNodeExectionName(startEventObject, "sendemail");
+            if("true".equals(sendmessage) || "true".equals(sendemail)) {
+                sendSmsAndEmail(assignee, proname, "1", user, poeple, startTime,sendmessage,sendemail);
+            }
         }
         catch (Exception e){
 

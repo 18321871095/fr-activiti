@@ -93,6 +93,18 @@ public class ProcessUtils {
         Map<String, List<ExtensionElement>> extensionElements = boundaryEvent.getExtensionElements();
         return getExtensionElements(extensionElements,name);
     }
+    /*得到开始节点属性*/
+    public static StartEvent getStartEventObject(String processDefinitionId,RepositoryService repositoryService){
+        Collection<FlowElement> flowElements = ProcessUtils.getFlowElements(processDefinitionId, repositoryService);
+        StartEvent start=null;
+        for(FlowElement f:flowElements){
+            if (f instanceof StartEvent){
+                start=(StartEvent)f;
+                break;
+            }
+        }
+        return start;
+    }
 
     /*得到开始节点扩展属性名*/
     public static String getStartNodeExectionName(StartEvent start,String name){

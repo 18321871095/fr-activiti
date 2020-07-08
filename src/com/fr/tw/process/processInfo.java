@@ -1294,7 +1294,7 @@ public class processInfo {
 
                 para.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                 para.put("shenheTime",startTime);
-                sendMessage.getSendMessageUser(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",null);
+                sendMessage.getSendMessageUser(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",null,processDefinitionID,repositoryService);
             }else{
                 jdbcTemplate.update("UPDATE ACT_HI_VARINST SET TEXT_='6' WHERE PROC_INST_ID_=? AND NAME_='process_state'",
                         new Object[]{processInstance.getId()});
@@ -1347,7 +1347,7 @@ public class processInfo {
                 jdbcTemplate.update("INSERT INTO proopreateinfo(id,proInstanceId,taskid,opreateName,opreateRealName,opreateTime,opreateType,nodeName,mycomment,reportName) VALUES(?,?,?,?,?,?,?,?,?,?)",
                         new Object[]{ProcessUtils.getUUID(),task.getProcessInstanceId(),taskid,userName,userRealName,new Date(),5,task.getName(),PreventXSS.delHTMLTag(info),moban});
                 HistoricProcessInstance hisProIn = historyService.createHistoricProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
-                sendMessage.getSendMessageUserOnZhuanBan(taskService,task.getId(),hisProIn.getName(),hisProIn.getStartUserId(),sdf.format(hisProIn.getStartTime()));
+                sendMessage.getSendMessageUserOnZhuanBan(taskService,task.getId(),hisProIn.getName(),hisProIn.getStartUserId(),sdf.format(hisProIn.getStartTime()),repositoryService);
                 jr.setResult("success");
             }
         }
@@ -1507,7 +1507,7 @@ public class processInfo {
 
                   para.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                   para.put("shenheTime",sdf.format(new Date()));
-                  sendMessage.getSendMessageUser(taskService,proInstanceId,jdbcTemplate,proname,para,"1",null);
+                  sendMessage.getSendMessageUser(taskService,proInstanceId,jdbcTemplate,proname,para,"1",null,proInstance.getProcessDefinitionId(),repositoryService);
               }
 
               jr.setResult(resultMap);
@@ -2753,7 +2753,7 @@ public class processInfo {
                    Object proDueTime = runtimeService.getVariable(task.getProcessInstanceId(), "proDueTime");
                    para.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                    para.put("shenheTime",sdf.format(new Date()));
-                   sendMessage.getSendMessageUser(taskService,proinstanceId,jdbcTemplate,proname,para,"1",null);
+                   sendMessage.getSendMessageUser(taskService,proinstanceId,jdbcTemplate,proname,para,"1",null,hisProInstance.getProcessDefinitionId(),repositoryService);
                    //保存流程操作信息
                    jdbcTemplate.update(
                            "INSERT INTO proopreateinfo(id,proInstanceId,taskid,opreateName,opreateRealName,opreateTime," +
@@ -2854,7 +2854,7 @@ public class processInfo {
                     managerService.executeCommand(new ShareniuCountersignAddCmd(executionId, str));
                     Task task1 = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).
                             taskCandidateOrAssigned(str).singleResult();
-                    sendMessage.getSendMessageUserOnAddHuiQian(task1,hisProIn.getName(),jdbcTemplate,hisProIn.getStartUserId(),sdf.format(hisProIn.getStartTime()));
+                    sendMessage.getSendMessageUserOnAddHuiQian(task1,hisProIn.getName(),jdbcTemplate,hisProIn.getStartUserId(),sdf.format(hisProIn.getStartTime()),repositoryService);
                 }
                 jdbcTemplate.update("insert into proopreateinfo(id,proInstanceId,taskid,opreateName,opreateRealName,opreateTime,opreateType,nodeName,mycomment,attachment,proname) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                         new Object[]{ProcessUtils.getUUID(),task.getProcessInstanceId(),taskid,userName,userRealName,new Date(),10,task.getName(),"","",""});
@@ -3043,7 +3043,7 @@ public class processInfo {
                         Object proDueTime = runtimeService.getVariable(task.getProcessInstanceId(), "proDueTime");
                         para.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                         para.put("shenheTime",sdf.format(new Date()));
-                        sendMessage.getSendMessageUser(taskService,proInid,jdbcTemplate,proname,para,"1",null);
+                        sendMessage.getSendMessageUser(taskService,proInid,jdbcTemplate,proname,para,"1",null,proInstanceHis.getProcessDefinitionId(),repositoryService);
                         //保存流程操作信息 11：管理员干预
                         jdbcTemplate.update(
                                 "INSERT INTO proopreateinfo(id,proInstanceId,taskid,opreateName,opreateRealName,opreateTime," +

@@ -29,6 +29,7 @@ public class userTasksendMessageLisenter implements TaskListener  {
         TaskService taskService=(TaskService) SpringContextUtil.getBean("taskService");
         HistoryService historyService=(HistoryService) SpringContextUtil.getBean("historyService");
         RuntimeService runtimeService=(RuntimeService) SpringContextUtil.getBean("runtimeService");
+        RepositoryService repositoryService=(RepositoryService) SpringContextUtil.getBean("repositoryService");
 
         SimpleDateFormat sdf1=new SimpleDateFormat("yyyy-MM-dd");
         if ("create".endsWith(eventName)) {
@@ -57,7 +58,7 @@ public class userTasksendMessageLisenter implements TaskListener  {
                 Object proDueTime = runtimeService.getVariable(delegateTask.getProcessInstanceId(), "proDueTime");
                 map.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                 map.put("shenheTime",sdf1.format(new Date()));
-                sendMessage.getSendMessageUser(taskService,delegateTask.getProcessInstanceId(),jdbcTemplate,proname,map,"1",null);
+                sendMessage.getSendMessageUser(taskService,delegateTask.getProcessInstanceId(),jdbcTemplate,proname,map,"1",null,his.getProcessDefinitionId(),repositoryService);
             }
             catch (Exception e){
                 e.printStackTrace();

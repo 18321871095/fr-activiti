@@ -28,6 +28,8 @@ public class CustomStartEventJsonConverter extends StartEventJsonConverter {
                 modelNode, shapeMap);
         StartEvent startEvent = (StartEvent)flowElement;
         String processtime = this.getPropertyValueAsString("processtime", elementNode);
+        boolean sendmessage = this.getPropertyValueAsBoolean("sendmessage", elementNode);
+        boolean sendemail = this.getPropertyValueAsBoolean("sendemail", elementNode);
         if(StringUtils.isNotEmpty(processtime)){
             List<ExtensionElement> list=new ArrayList<>();
             ExtensionElement extension=new ExtensionElement();
@@ -37,6 +39,28 @@ public class CustomStartEventJsonConverter extends StartEventJsonConverter {
             extension.setElementText(processtime);
             list.add(extension);
             extensionElements.put("jh",list);
+            startEvent.setExtensionElements(extensionElements);
+        }
+        if(sendmessage){
+            List<ExtensionElement> list=new ArrayList<>();
+            ExtensionElement extension=new ExtensionElement();
+            extension.setName("sendmessage");
+            extension.setNamespace("sendmessage");
+            extension.setNamespacePrefix("activiti");
+            extension.setElementText(String.valueOf(sendmessage));
+            list.add(extension);
+            extensionElements.put("jh1",list);
+            startEvent.setExtensionElements(extensionElements);
+        }
+        if(sendemail){
+            List<ExtensionElement> list=new ArrayList<>();
+            ExtensionElement extension=new ExtensionElement();
+            extension.setName("sendemail");
+            extension.setNamespace("sendemail");
+            extension.setNamespacePrefix("activiti");
+            extension.setElementText(String.valueOf(sendemail));
+            list.add(extension);
+            extensionElements.put("jh2",list);
             startEvent.setExtensionElements(extensionElements);
         }
         this.convertJsonToFormProperties(elementNode, startEvent);

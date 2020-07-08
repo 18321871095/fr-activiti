@@ -35,6 +35,7 @@ public class sendMessageJobUtil implements Job{
         TaskService taskService=(TaskService) SpringContextUtil.getBean("taskService");
         RuntimeService runtimeService=(RuntimeService) SpringContextUtil.getBean("runtimeService");
         HistoryService historyService=(HistoryService) SpringContextUtil.getBean("historyService");
+        RepositoryService repositoryService=(RepositoryService) SpringContextUtil.getBean("repositoryService");
         JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
         String processInstanceId = jobDataMap.getString("processInstanceId");
         String activitiId=jobDataMap.getString("activitiId");
@@ -73,7 +74,7 @@ public class sendMessageJobUtil implements Job{
                     Object proDueTime = runtimeService.getVariable(processInstanceId, "proDueTime");
                     map.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                     map.put("shenheTime",sdf1.format(new Date()));
-                    sendMessage.getSendMessageUser(taskService,task.getProcessInstanceId(),jdbcTemplate,proname,map,"2",list);
+                    sendMessage.getSendMessageUser(taskService,task.getProcessInstanceId(),jdbcTemplate,proname,map,"2",list,processInstance.getProcessDefinitionId(),repositoryService);
                     jdbcTemplate.update("delete from act_scheduler where proInstanceid=? and activityid=?", new Object[]{processInstanceId, activitiId});
                     //System.out.println("==========逾期发送短信成功");
                 }else{
