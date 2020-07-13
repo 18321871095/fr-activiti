@@ -30,7 +30,7 @@
 修复移动端页面标题显示网址问题
 修复查询待办任务HistoricProcessInstanceQuery为空的问题
 短信与邮件提醒可配置
-
+修复了创建会签uid重复问题
 
 
 
