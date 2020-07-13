@@ -411,6 +411,9 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
               var endNode=false;
               var noAssgin=[];
               var setNextAssginId=[];
+              //检查会签节点设置uuid是否重复
+              var multiinstance_collection_arr=[];
+              var  multiinstance_collection=[];
               // console.log(JSON.stringify(json))
               //校验流程画的是否正确
               //校验连线是否有源头与目标
@@ -460,10 +463,21 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
                       }*/
                       //会签节点
                       else if (flowElement.properties.multiinstance_type == 'Parallel' || flowElement.properties.multiinstance_type == 'Sequential' || flowElement.properties.huiqian!='') {
-                        //  console.log("会签节点"+flowElement.properties.name)
+                          //console.log("会签节点"+flowElement.properties.name)
+                          var temp={};
                           if (flowElement.properties.multiinstance_collection == "" || typeof (flowElement.properties.multiinstance_collection) == 'undefined') {
                               flowElement.properties["multiinstance_collection"] = "Parallel_" + uuid();
                           }
+                          if((multiinstance_collection.indexOf(flowElement.properties["multiinstance_collection"]))==-1){
+                              multiinstance_collection.push(flowElement.properties["multiinstance_collection"]);
+                          }else{
+                              //重复id
+                              flowElement.properties["multiinstance_collection"] = "Parallel_" + uuid();
+                          }
+                          temp["id"]=flowElement.resourceId;
+                          temp["name"]=flowElement.properties.name;
+                          temp["uuid"]=flowElement.properties["multiinstance_collection"];
+                          multiinstance_collection_arr.push(temp);
                           flowElement.properties["multiinstance_variable"] = "list";
                           flowElement.properties.usertaskassignment = {"assignment": {"assignee": "${list}"}};
                           //自动流转
@@ -680,6 +694,8 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
               if(!endNode){
                   message.push("整个流程图没有结束节点");
               }
+              console.log(multiinstance_collection_arr)
+              console.log(multiinstance_collection)
               //循环完后添加监听器
               //console.log("添加任务监听器");
               //console.log(myTaskListener)
@@ -775,6 +791,11 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
                   }
               }
 
+              //判断生成的会签的id是否重复
+            /*  for(var bb=0;bb<multiinstance_collection_arr.length;aa++){
+
+              }
+*/
               if (message.length === 0) {
                  /* console.log("保存后：")
                   console.log(json.childShapes)*/
