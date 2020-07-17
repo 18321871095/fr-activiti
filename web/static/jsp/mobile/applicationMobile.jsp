@@ -159,6 +159,7 @@
         $(document).on("click","${'[name=\'submitFormInfo\']'}",function(){
             if(getiswritecomment(iswritecomment)){
                 if(true){
+                    alert(document.getElementById('reportFrame').contentWindow.contentPane)
                     document.getElementById('reportFrame').contentWindow.contentPane._doVerify(
                         function () {
                             //校验成功
