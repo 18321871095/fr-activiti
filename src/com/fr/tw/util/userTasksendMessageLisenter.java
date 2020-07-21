@@ -58,7 +58,17 @@ public class userTasksendMessageLisenter implements TaskListener  {
                 Object proDueTime = runtimeService.getVariable(delegateTask.getProcessInstanceId(), "proDueTime");
                 map.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                 map.put("shenheTime",sdf1.format(new Date()));
-                sendMessage.getSendMessageUser(taskService,delegateTask.getProcessInstanceId(),jdbcTemplate,proname,map,"1",null,his.getProcessDefinitionId(),repositoryService);
+                ProcessUtils.fixedThreadPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            sendMessage.getSendMessageUser(taskService,delegateTask.getProcessInstanceId(),jdbcTemplate,proname,map,"1",null,his.getProcessDefinitionId(),repositoryService);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
             }
             catch (Exception e){
                 e.printStackTrace();

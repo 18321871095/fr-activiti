@@ -74,7 +74,17 @@ public class sendMessageJobUtil implements Job{
                     Object proDueTime = runtimeService.getVariable(processInstanceId, "proDueTime");
                     map.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                     map.put("shenheTime",sdf1.format(new Date()));
-                    sendMessage.getSendMessageUser(taskService,task.getProcessInstanceId(),jdbcTemplate,proname,map,"2",list,processInstance.getProcessDefinitionId(),repositoryService);
+                    ProcessUtils.fixedThreadPool.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                sendMessage.getSendMessageUser(taskService,task.getProcessInstanceId(),jdbcTemplate,proname,map,"2",list,processInstance.getProcessDefinitionId(),repositoryService);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
                     jdbcTemplate.update("delete from act_scheduler where proInstanceid=? and activityid=?", new Object[]{processInstanceId, activitiId});
                     //System.out.println("==========逾期发送短信成功");
                 }else{

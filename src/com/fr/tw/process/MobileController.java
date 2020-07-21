@@ -303,7 +303,16 @@ public class MobileController {
 
                 para.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                 para.put("shenheTime",startTime);
-                sendMessage.getSendMessageUser(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",null,pro.getProcessDefinitionId(),repositoryService);
+                ProcessUtils.fixedThreadPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            sendMessage.getSendMessageUser(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",null,pro.getProcessDefinitionId(),repositoryService);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }else{
                 jdbcTemplate.update("UPDATE ACT_HI_VARINST SET TEXT_='6' WHERE PROC_INST_ID_=? AND NAME_='process_state'",
                         new Object[]{processInstance.getId()});
@@ -961,7 +970,17 @@ public class MobileController {
 
                     para.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                     para.put("shenheTime",sdf.format(new Date()));
-                    sendMessage.getSendMessageUser(taskService,proInstanceId,jdbcTemplate,proname,para,"1",null,proInstanceHis.getProcessDefinitionId(),repositoryService);
+                    ProcessUtils.fixedThreadPool.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                sendMessage.getSendMessageUser(taskService,proInstanceId,jdbcTemplate,proname,para,"1",null,proInstanceHis.getProcessDefinitionId(),repositoryService);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
                 }
 
                 jr.setResult(resultMap);

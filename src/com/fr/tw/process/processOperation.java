@@ -1,5 +1,7 @@
 package com.fr.tw.process;
 
+import com.fanruan.api.log.LogKit;
+import com.fr.log.FineLoggerFactory;
 import com.fr.tw.util.checkProcess;
 import com.fr.tw.util.getFilePathName;
 
@@ -35,6 +37,8 @@ public class processOperation implements Filter{
         try {
                 String realPath = getFilePathName.getFileName(request1);
                 List<String> mydate=new ArrayList<>();
+           /*     FineLoggerFactory.getLogger().info("realPath1: {}", new Object[]{realPath});
+                LogKit.info("realPath2: "+realPath);*/
                 String checkResult=checkProcess.check(realPath,request1,response1,mydate);
                 if(checkResult.length()==3){
                     if("100".equals(checkResult)){

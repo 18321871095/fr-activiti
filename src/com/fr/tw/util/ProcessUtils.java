@@ -45,6 +45,8 @@ import java.io.*;
 import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,6 +54,9 @@ import static oracle.net.aso.C01.*;
 
 public class ProcessUtils {
     public static final Properties p = new Properties();
+    public static ExecutorService fixedThreadPool = Executors.newFixedThreadPool(20);
+
+
 
     public static List<ActivityImpl> getProcessActivitis(String processDefinitionID, RepositoryService repositoryService){
         ProcessDefinitionEntity processDefinitionEntity = (ProcessDefinitionEntity)repositoryService.getProcessDefinition(processDefinitionID);
