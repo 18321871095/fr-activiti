@@ -11,8 +11,34 @@
         .myli:hover{
             color: red;
         }
-
+        .clearfix::after {
+            height: 0;
+            display: block;
+            visibility: hidden;
+            clear: both;
+            content: '';
+        }
+        .hdWrap{
+            width: 100%;
+            border-bottom: 1px solid #f5f5f5;
+            cursor: pointer;
+        }
+        .hdWrap a{ font-size: 14px; color: #333; padding: 0 10px; margin: 10px; }
+        .hdWrap a.active{
+            color: #3296f5;
+            border-bottom: 2px solid #3296f5;
+        }
+        .headText{
+            font-size: 14px;
+            color: #333;
+            border-left: 4px solid #3269f5;
+            padding-left: 0.5em;
+            margin: 10px;
+            box-sizing: border-box;
+        }
     </style>
+<%--    <link rel="stylesheet" href="${ctx}/static/css/xzblr.css"--%>
+    <link rel="stylesheet" href="${ctx}/static/layui/css/layui.css">
     <script src="${ctx}/static/js/jquery-2.1.1.min.js"></script>
     <%
         String Authorization="";
@@ -30,46 +56,119 @@
 <div style="display: inline-block" id="my1" onclick="aa()" class="jian"></div>--%>
 <div>
 <c:if test="${param.state=='1'||param.state=='2'||param.state=='3'}">
-    <select id="mySelect" onchange="showDiv()" style="width: 100px;margin: 5px;">
+    <div class="hdWrap">
+        <a id="dep_a" class="active" onclick="showDiv(1,this)">部门-人员</a>
+        <a id="role_a" onclick="showDiv(0,this)">角色-人员</a>
+    </div>
+       <%-- <div class="hd clearfix">
+            <a href="#" class="active">部门-人员</a>
+            <a href="#">角色-人员</a>
+        </div>--%>
+    <%--<select id="mySelect" onchange="showDiv()" style="width: 100px;margin: 5px;">
         <option value="1">部门-人员</option>
         <option value="0">角色-人员</option>
-    </select>
+    </select>--%>
 </c:if>
 </div>
-<div id="depDiv">
-    <div style="width: 38%;height: 90%;float: left;overflow-y:auto;">
-        <span style="font-size: 15px">部门：</span>
-        <input id="selDepName" type="text" placeholder="搜索部门" /><button onclick="selDep(this)">搜索</button>
-        <hr style="margin: 2px 0px">
-        <ul id="department" style="line-height: 25px;padding: 0px 10px;font-size: 15px">
-        </ul>
-    </div>
-    <div style="width: 18%;height: 90%;float: left;overflow-y:auto;">
-        <span style="font-size: 15px">职位：</span><hr style="margin: 5px 0px">
-        <ul id="position" style="line-height: 25px;padding: 0px 10px;font-size: 15px">
-        </ul>
-    </div>
-    <div style="width: 43%;height: 90%;float: left;overflow-y:auto;">
-        <span style="font-size: 15px">人员：</span><hr style="margin: 5px 0px">
-        <ul id="user" style="line-height: 25px;padding: 0px 15px;font-size: 15px;list-style: none;">
 
-        </ul>
+<div id="depDiv">
+    <div style="width: 38%;height: 90%;float: left;">
+       <div class="headText">
+            部门
+        </div>
+        <div class="layui-form" action="">
+            <div class="layui-form-item" style="margin-bottom: 0;">
+                <div class="layui-input-block" style="margin:0px 10px;">
+                    <div style="width: 80%; float: left;">
+                        <input type="text" id="selDepName" style="border-radius: 5px 0 0 5px;height: 30px;line-height: 30px;"
+                               lay-verify="title" autocomplete="off" placeholder="搜索部门" class="layui-input">
+
+                    </div>
+                    <div style="width: 20%; float: left;">
+                        <button class="layui-btn" onclick="selDep(this)"
+                                style="width: 100%; background: #3269f5;border-radius: 0 5px 5px 0;height: 30px;line-height: 30px;">
+                            <i class="layui-icon layui-icon-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      <%--  <span style="font-size: 15px">部门：</span>
+        <input id="selDepName" type="text" placeholder="搜索部门" /><button onclick="selDep(this)">搜索</button>
+        <hr style="margin: 2px 0px">--%>
+
+        <div style="height: 75%;overflow-y: auto;">
+            <ul id="department" style="line-height: 25px;padding: 0px 10px;font-size: 15px;">
+            </ul>
+        </div>
+
+    </div>
+    <div style="width: 27%;height: 90%;float: left;overflow-y:auto;">
+        <div class="headText">
+            职位
+        </div>
+      <%--  <span style="font-size: 15px">职位：</span>
+        <hr style="margin: 5px 0px">--%>
+        <div style="height: 85%;overflow-y: auto;">
+            <ul id="position" style="line-height: 25px;padding: 0px 10px;font-size: 15px">
+            </ul>
+        </div>
+    </div>
+    <div style="width: 35%;height: 90%;float: left;">
+        <div class="headText">
+            人员
+        </div>
+        <%--<span style="font-size: 15px">人员：</span><hr style="margin: 5px 0px">--%>
+        <div style="height: 85%;overflow-y: auto;">
+            <ul id="user" style="line-height: 25px;padding: 0px 15px;font-size: 15px;list-style: none;">
+
+            </ul>
+        </div>
     </div>
 </div>
+
 <div id="roleDiv" style="display: none;">
-    <div style="width: 38%;height: 90%;float: left;overflow-y:auto;">
-        <span style="font-size: 15px">角色：</span>
-        <input id="role_name1" type="text" placeholder="搜索角色" /><button onclick="selRole1(this)">搜索</button>
-        <hr style="margin: 2px 0px">
-        <ul id="role" style="line-height: 25px;padding: 0px 10px;font-size: 15px">
-        </ul>
+    <div style="float: left;">
+        <div class="headText">
+            角色
+        </div>
+           <%-- <span style="font-size: 15px">角色：</span>--%>
+        <div class="layui-form" action="" style="width: 100%;">
+            <div class="layui-form-item" style="margin-bottom: 0;">
+                <div class="layui-input-block" style="margin:0px 10px;">
+                    <div style="width: 80%; float: left;">
+                        <input type="text" id="role_name1" style="border-radius: 5px 0 0 5px;height: 30px;line-height: 30px;"
+                               lay-verify="title" autocomplete="off" placeholder="搜索角色" class="layui-input">
+
+                    </div>
+                    <div style="width: 20%; float: left;">
+                        <button class="layui-btn" onclick="selRole1(this)"
+                                style="width: 100%; background: #3269f5;border-radius: 0 5px 5px 0;height: 30px;line-height: 30px;">
+                            <i class="layui-icon layui-icon-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+         <%--   <input id="role_name1" type="text" placeholder="搜索角色" /><button onclick="selRole1(this)">搜索</button>--%>
+          <%--  <hr style="margin: 2px 0px">--%>
+        <div style="width: 38%;height: 65%;float: left;overflow-y:auto;width: 100%">
+            <ul id="role" style="line-height: 25px;padding: 0px 10px;font-size: 15px">
+            </ul>
+        </div>
     </div>
-    <div style="width: 60%;height: 90%;float: left;overflow-y:auto;">
-        <span style="font-size: 15px">人员：</span><hr style="margin: 5px 0px">
-        <ul id="role_user" style="line-height: 25px;padding: 0px 15px;font-size: 15px;list-style: none;">
-        </ul>
+    <div style="float: left;width: 69%;">
+        <div class="headText">
+            人员
+        </div>
+       <%-- <span style="font-size: 15px">人员：</span><hr style="margin: 5px 0px">--%>
+        <div style="width: 38%;height: 80%;float: left;overflow-y:auto;width: 100%">
+            <ul id="role_user" style="line-height: 25px;padding: 0px 15px;font-size: 15px;list-style: none;">
+            </ul>
+        </div>
     </div>
 </div>
+
 <div id="roleDiv1" style="display: none;">
     <div style="width: 99%;height: 90%;float: left;overflow-y:auto;">
         <span style="font-size: 15px">角色：</span>
@@ -150,7 +249,7 @@
                             temp="<div name='add'  style='border: 1px solid #000;cursor: pointer;display: inline-block;width: 10px;height: 10px;background-image: url(\"${ctx}/static/images/add.png\");background-size: cover'></div>"
                                 +"<div onclick='getPosition(this)' id="+data.data[i].id+" class=\"myli\" style='display: inline-block;margin-left: 5px'>"+data.data[i].text+"</div>";
                         }
-                        mythis.next().after("<ul style='list-style: none;margin-left: -22px;'><li>"+temp+"</li></ul>");
+                        mythis.next().after("<ul style='list-style: none;margin-left: 15px;'><li>"+temp+"</li></ul>");
                        // $("#department").append("<li >"+temp+"</li>");
                     }
                 },
@@ -397,9 +496,11 @@
         $("#my").removeClass("add::after ")
     }
 
-    function showDiv() {
-        var name=$("#mySelect").val();
+    function showDiv(name,obj) {
+       // var name=$("#mySelect").val();
         if(name=='1'){
+            $("#dep_a").addClass("active");
+            $("#role_a").removeClass("active");
             $("#depDiv").show();
             $("#roleDiv").hide();
             $("#roleDiv1").hide();
@@ -415,6 +516,8 @@
                 $("#role_user").find("input[type='checkbox']").prop("checked",false);
             }
         }else if(name=='0'){
+            $("#dep_a").removeClass("active");
+            $("#role_a").addClass("active");
             showRoleDiv();
         }else{
             $("#roleDiv").hide();
@@ -660,6 +763,9 @@
                         temp["name"]=obj.value;
                         temp["user"]=getRolesInAssgine(mydata);
                         updateRoles(groupRoles,temp,1,group);
+                    }else{
+                        alert("该角色下没有用户名，选择无效");
+                        obj.checked=false;
                     }
                 },
                 error:function (xhr,text) {
@@ -696,6 +802,9 @@
                         temp["name"]=obj.value;
                         temp["user"]=getRolesInAssgine(mydata);
                         updateRolesByHuiQian(groupRolesByHuiQian,temp,1,group);
+                    }else{
+                        alert("该角色下没有用户名，选择无效");
+                        obj.checked=false;
                     }
                 },
                 error:function (xhr,text) {

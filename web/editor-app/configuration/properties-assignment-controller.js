@@ -91,6 +91,7 @@ var KisBpmAssignmentPopupCtrl = [ '$scope', function($scope) {
         /* $scope.property.value没有值时，结构为$scope.property.value=""，$scope.assignment={}*/
         $scope.assignment = {};
         $scope.assigneRadioType=0;
+        $scope.preemptiveRadioType=0;
         console.log("$scope.property.value为空设置办理人")
        // console.log($scope.property)
        // console.log($scope.assignment)

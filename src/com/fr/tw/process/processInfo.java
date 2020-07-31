@@ -14,6 +14,7 @@ import com.fr.stable.script.Expression;
 import com.fr.tw.test.backtest;
 import com.fr.tw.test.task;
 import com.fr.tw.util.*;
+import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
 import org.activiti.bpmn.model.*;
 import org.activiti.engine.*;
 import org.activiti.engine.history.*;
@@ -217,146 +218,63 @@ public class processInfo {
     @ResponseBody
     public JSONResult getcontrol(HttpServletRequest request,String num) throws Exception {
         JSONResult jr=new JSONResult();
-        Integer yeshu=Integer.valueOf(num);
+        int yeshu=0;
+        if(num==null || "".equals(num)){
+            yeshu=1;
+        }else{
+            yeshu = Integer.valueOf(num);
+        }
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
         try {
             List<Map<String, Object>> result = new ArrayList<>();
             List<HistoricProcessInstance> list_zong =new ArrayList<>();
             String currentUserNameFromRequestCookie = LoginService.getInstance().getCurrentUserNameFromRequestCookie(request);
+            long count = historyService.createHistoricProcessInstanceQuery().count();
+            int zong=(int) count;
             if(ProcessUtils.isAdmin(currentUserNameFromRequestCookie)){
                 list_zong = historyService.createHistoricProcessInstanceQuery().
-                        orderByProcessInstanceStartTime().desc().list();
-             }else{
-                list_zong = historyService.createHistoricProcessInstanceQuery().
-                        processInstanceTenantId(currentUserNameFromRequestCookie).
-                        orderByProcessInstanceStartTime().processInstanceTenantId(currentUserNameFromRequestCookie)
-                        .desc().list();
-            }
-                List<HistoricProcessInstance> list = ProcessUtils.getHistoricProcessInstanceByYeShu(list_zong, yeshu);
-                for(int i=0;i<list.size();i++){
-                    String process_formKey="";
-                    String username="";
-                    String dep="";
-                    String nodeName="";
-                    String currentAssignee="";
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("proname", list.get(i).getName());
-                    map.put("processDefinitionID", list.get(i).getProcessDefinitionId());
-                    map.put("processInstanceId", list.get(i).getId());
-                    map.put("requestid",list.get(i).getBusinessKey());
-                    map.put("startTime",sdf.format(list.get(i).getStartTime()));
-                    Date endTime = list.get(i).getEndTime();
-                    if(endTime==null){
-                        //未结束  详情表单是当前任务的表单
-                        map.put("endTime", "");
-                        Map<String, VariableInstance> mapVariable = runtimeService.getVariableInstances(list.get(i).getId());
-                        String process_state = mapVariable.get("process_state").getTextValue();
-                        process_formKey = mapVariable.get("process_formKey").getTextValue();
-                        username=mapVariable.get("process_userRealName").getTextValue();
-                        map.put("status", process_state);
-                        Map<String, String> currentMap = ProcessUtils.getCurrentAssignee(taskService, list.get(i).getId());
-                        currentAssignee=currentMap.get("assignee")==null ? "" : currentMap.get("assignee").toString();
-                        nodeName=currentMap.get("node")==null ? "" : currentMap.get("node").toString();
-                        map.put("currentAssignee",currentAssignee);
-                        map.put("nodeName",nodeName);
-                    }else{
-                        //结束了 详情表单是发起时的表单
-                        map.put("nodeName", nodeName);
-                        map.put("currentAssignee", currentAssignee);
-                        map.put("status", "6");
-                        map.put("endTime", sdf.format(list.get(i).getEndTime()));
-                        List<HistoricVariableInstance> hisVarList = historyService.createHistoricVariableInstanceQuery().
-                                processInstanceId(list.get(i).getId()).list();
-                        for(HistoricVariableInstance h:hisVarList){
-                            if("process_formKey".equals(h.getVariableName())){
-                                process_formKey=h.getValue().toString();
-                            }
-                            if("process_userRealName".equals(h.getVariableName())){
-                                username=h.getValue().toString();
-                            }
-                        }
-
-                    }
-
-                    map.put("reportName",process_formKey);
-                    map.put("startRealName",username);
-                    List<String> deps = ProcessUtils.getDepsAndPostByUserName(list.get(i).getStartUserId());
-                    for(int j=0;j<deps.size();j++){
-                        dep+=deps.get(j)+",";
-                    }
-                    map.put("dep","".equals(dep) ? dep : dep.substring(0,dep.length()-1));
-                    result.add(map);
-                }
-
-                jr.setMsg("success");
-                jr.setResult(result);
-                jr.setTotal(list_zong.size());
-                if(list_zong.size()<=10){
-                    jr.setYeshu(1);
-                }else{
-                    jr.setYeshu(list_zong.size()%10==0 ? list_zong.size()/10 : list_zong.size()/10+1);
-                }
-            return jr;
-        }
-        catch (Exception e){
-            jr.setMsg("err");
-            jr.setResult(e.getMessage());
-            return jr;
-        }
-    }
-
-    @RequestMapping("/getcontrol1")
-    @ResponseBody
-    public JSONResult getcontrol1(HttpServletRequest request,String num,String proname,String proInstanceId,
-                                 String name,String depName,String time,String status) throws Exception {
-        JSONResult jr=new JSONResult();
-        Integer yeshu=Integer.valueOf(num);
-        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
-        try {
-            List<Map<String, Object>> result = new ArrayList<>();
-            List<HistoricProcessInstance> list =new ArrayList<>();
-            String currentUserNameFromRequestCookie = LoginService.getInstance().getCurrentUserNameFromRequestCookie(request);
-            if(ProcessUtils.isAdmin(currentUserNameFromRequestCookie)){
-                list = historyService.createHistoricProcessInstanceQuery().
-                        orderByProcessInstanceStartTime().desc().list();
+                        orderByProcessInstanceStartTime().desc().listPage((yeshu-1)*10,10);
             }else{
-                list = historyService.createHistoricProcessInstanceQuery().
+                list_zong = historyService.createHistoricProcessInstanceQuery().
                         processInstanceTenantId(currentUserNameFromRequestCookie).
                         orderByProcessInstanceStartTime().processInstanceTenantId(currentUserNameFromRequestCookie)
-                        .desc().list();
+                        .desc().listPage((yeshu-1)*10,10);
             }
-            for(int i=0;i<list.size();i++){
+            // List<HistoricProcessInstance> list = ProcessUtils.getHistoricProcessInstanceByYeShu(list_zong, yeshu);
+            for(int i=0;i<list_zong.size();i++){
                 String process_formKey="";
                 String username="";
                 String dep="";
                 String nodeName="";
                 String currentAssignee="";
                 Map<String, Object> map = new HashMap<>();
-                map.put("proname", list.get(i).getName());
-                map.put("processDefinitionID", list.get(i).getProcessDefinitionId());
-                map.put("processInstanceId", list.get(i).getId());
-                map.put("requestid",list.get(i).getBusinessKey());
-                map.put("startTime",sdf.format(list.get(i).getStartTime()));
-                Date endTime = list.get(i).getEndTime();
+                map.put("proname", list_zong.get(i).getName());
+                map.put("processDefinitionID", list_zong.get(i).getProcessDefinitionId());
+                map.put("processInstanceId", list_zong.get(i).getId());
+                map.put("requestid",list_zong.get(i).getBusinessKey());
+                map.put("startTime",sdf.format(list_zong.get(i).getStartTime()));
+                Date endTime = list_zong.get(i).getEndTime();
                 if(endTime==null){
+                    //未结束  详情表单是当前任务的表单
                     map.put("endTime", "");
-                    Map<String, VariableInstance> mapVariable = runtimeService.getVariableInstances(list.get(i).getId());
+                    Map<String, VariableInstance> mapVariable = runtimeService.getVariableInstances(list_zong.get(i).getId());
                     String process_state = mapVariable.get("process_state").getTextValue();
                     process_formKey = mapVariable.get("process_formKey").getTextValue();
                     username=mapVariable.get("process_userRealName").getTextValue();
                     map.put("status", process_state);
-                    Map<String, String> currentMap = ProcessUtils.getCurrentAssignee(taskService, list.get(i).getId());
+                    Map<String, String> currentMap = ProcessUtils.getCurrentAssignee(taskService, list_zong.get(i).getId());
                     currentAssignee=currentMap.get("assignee")==null ? "" : currentMap.get("assignee").toString();
                     nodeName=currentMap.get("node")==null ? "" : currentMap.get("node").toString();
                     map.put("currentAssignee",currentAssignee);
                     map.put("nodeName",nodeName);
                 }else{
+                    //结束了 详情表单是发起时的表单
                     map.put("nodeName", nodeName);
                     map.put("currentAssignee", currentAssignee);
                     map.put("status", "6");
-                    map.put("endTime", sdf.format(list.get(i).getEndTime()));
+                    map.put("endTime", sdf.format(list_zong.get(i).getEndTime()));
                     List<HistoricVariableInstance> hisVarList = historyService.createHistoricVariableInstanceQuery().
-                            processInstanceId(list.get(i).getId()).list();
+                            processInstanceId(list_zong.get(i).getId()).list();
                     for(HistoricVariableInstance h:hisVarList){
                         if("process_formKey".equals(h.getVariableName())){
                             process_formKey=h.getValue().toString();
@@ -370,118 +288,160 @@ public class processInfo {
 
                 map.put("reportName",process_formKey);
                 map.put("startRealName",username);
-                List<String> deps = ProcessUtils.getDepsAndPostByUserName(list.get(i).getStartUserId());
+                List<String> deps = ProcessUtils.getDepsAndPostByUserName(list_zong.get(i).getStartUserId());
                 for(int j=0;j<deps.size();j++){
                     dep+=deps.get(j)+",";
                 }
                 map.put("dep","".equals(dep) ? dep : dep.substring(0,dep.length()-1));
                 result.add(map);
             }
-            List<Map<String, Object>> result1 = new ArrayList<>();
-            //条件查询
-            if((proname!=null&&!"".equals(proname))||(proInstanceId!=null&&!"".equals(proInstanceId))||
-                    (name!=null&&!"".equals(name))||(depName!=null&&!"".equals(depName))||(time!=null&&!"".equals(time))
-                     || (status!=null&&!"".equals(status)) ){
-                if(proname!=null&&!"".equals(proname)){
-                    for(int k4=0;k4<result.size();k4++) {
-                        String s = result.get(k4).get("proname").toString();
-                        if (s.contains(proname)) {
-                            if(!result1.contains(result.get(k4))){
-                                result1.add(result.get(k4));
-                            }
-                        }
-                    }
-                    result=result1;
-                    result1 = new ArrayList<>();
-                }
-                if(proInstanceId!=null&&!"".equals(proInstanceId)){
-                    for(int k5=0;k5<result.size();k5++) {
-                        String s = result.get(k5).get("processInstanceId").toString();
-                        if (s.contains(proInstanceId)) {
-                            if(!result1.contains(result.get(k5))){
-                                result1.add(result.get(k5));
-                            }
-                        }
-                    }
-                    result=result1;
-                    result1 = new ArrayList<>();
-                }
-                    if(name!=null&&!"".equals(name)){
-                        for(int k=0;k<result.size();k++) {
-                            String s = result.get(k).get("startRealName").toString();
-                            if (s.contains(name)) {
-                                if(!result1.contains(result.get(k))){
-                                    result1.add(result.get(k));
-                                }
-                            }
-                        }
-                        result=result1;
-                        result1 = new ArrayList<>();
-                    }
-                    if(depName!=null&&!"".equals(depName)){
-                        for(int k1=0;k1<result.size();k1++) {
-                            String s1 = result.get(k1).get("dep").toString();
-                            if (s1.contains(depName)) {
-                                if(!result1.contains(result.get(k1))){
-                                    result1.add(result.get(k1));
-                                }
-                            }
-                        }
-                        result=result1;
-                        result1 = new ArrayList<>();
-                    }
-                    if(time!=null&&!"".equals(time)){
-                        for(int k2=0;k2<result.size();k2++) {
-                            Date startTime = sdf.parse(result.get(k2).get("startTime").toString());
-                            int mymonth = startTime.getMonth() + 1;
-                            int myyear=startTime.getYear()+1900;
-                            String s_year = time.split("-")[0];
-                            String s_month = time.split("-")[1];
-                            if(Integer.valueOf(s_year)==myyear && Integer.valueOf(s_month)==mymonth){
-                                if(!result1.contains(result.get(k2))){
-                                    result1.add(result.get(k2));
-                                }
-                            }
-                        }
-                        result=result1;
-                        result1 = new ArrayList<>();
-                    }
-                if(status!=null&&!"".equals(status)){
-                        if("1".equals(status)){//完成
-                            for(int k3=0;k3<result.size();k3++) {
-                                String s11 = result.get(k3).get("status").toString();
-                                if("6".equals(s11) || "9".equals(s11)){
-                                    if(!result1.contains(result.get(k3))){
-                                        result1.add(result.get(k3));
-                                    }
-                                }
-                            }
-                            result=result1;
-                            result1 = new ArrayList<>();
-                        }else  if("0".equals(status)){//未完成
-                            for(int k31=0;k31<result.size();k31++) {
-                                String s22 = result.get(k31).get("status").toString();
-                                if(!"6".equals(s22) && !"9".equals(s22)){
-                                    if(!result1.contains(result.get(k31))){
-                                        result1.add(result.get(k31));
-                                    }
-                                }
-                            }
-                            result=result1;
-                            result1 = new ArrayList<>();
-                        }
-                }
 
-            }
-            List<Map<String, Object>> resultByYeShu = ProcessUtils.getCountByYeShu(result, yeshu);
             jr.setMsg("success");
-            jr.setResult(resultByYeShu);
-
-            jr.setTotal(result.size());
-            if(result.size()<=10){
+            jr.setResult(result);
+            jr.setTotal(zong);
+            if(zong<=10){
                 jr.setYeshu(1);
             }else{
-                jr.setYeshu(result.size()%10==0 ? result.size()/10 : result.size()/10+1);
+                jr.setYeshu(zong%10==0 ? zong/10 : zong/10+1);
+            }
+            return jr;
+        }
+        catch (Exception e){
+            jr.setMsg("err");
+            jr.setResult(e.getMessage());
+            return jr;
+        }
+    }
+
+    @RequestMapping("/getcontrol1")
+    @ResponseBody
+    public JSONResult getcontrol1(HttpServletRequest request,String num,String proname,String proInstanceId,
+                                  String name,String depName,String time,String status) throws Exception {
+        JSONResult jr=new JSONResult();
+        List<String> his_id=new ArrayList<>();
+        int yeshu=0;
+        if(num==null || "".equals(num)){
+            yeshu=1;
+        }else{
+            yeshu = Integer.valueOf(num);
+        }
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            List<Map<String, Object>> result = new ArrayList<>();
+            List<HistoricProcessInstance> hisList=new ArrayList<>();
+            String currentUserNameFromRequestCookie = LoginService.getInstance().getCurrentUserNameFromRequestCookie(request);
+            HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
+
+            if(proname!=null&&!"".equals(proname)){
+                historicProcessInstanceQuery.processInstanceNameLike("%"+proname+"%");
+            }
+            if(proInstanceId!=null&&!"".equals(proInstanceId)){
+                historicProcessInstanceQuery.processInstanceId(proInstanceId);
+            }
+            if(name!=null&&!"".equals(name)){
+                HistoricVariableInstanceQuery userRealName = historyService.createHistoricVariableInstanceQuery().variableName("process_userRealName");
+                if(userRealName!=null){
+                    List<HistoricVariableInstance> HistoricVariableInstanceList = userRealName.list();
+                    for (HistoricVariableInstance h : HistoricVariableInstanceList) {
+                        if(name.equals(h.getVariableName())){
+                            his_id.add(h.getId());
+                        }
+                    }
+                }
+            }
+            if("1".equals(status)){
+                historicProcessInstanceQuery.finished();
+            }else if("0".equals(status)){
+                historicProcessInstanceQuery.unfinished();
+            }
+
+            if(ProcessUtils.isAdmin(currentUserNameFromRequestCookie)){
+                hisList = historicProcessInstanceQuery.orderByProcessInstanceStartTime().desc().list();
+            }else{
+                hisList = historicProcessInstanceQuery.processInstanceTenantId(currentUserNameFromRequestCookie)
+                        .orderByProcessInstanceStartTime().desc().list();
+            }
+
+
+            //过滤发起人、部门、时间
+            List<HistoricProcessInstance> temp=new ArrayList<HistoricProcessInstance>();
+            for(HistoricProcessInstance his : hisList){
+                boolean startPeople=true;
+                boolean departmentName=true;
+                boolean startTime=true;
+                //发起人
+                if(his_id.size()>0){
+                    if(!his_id.contains(his.getId())){
+                        startPeople=false;
+                    }
+                }
+                //部门
+                if(depName!=null&&!"".equals(depName)){
+                    List<String> deps = ProcessUtils.getDepsAndPostByUserName(his.getStartUserId());
+                    if(!deps.contains(depName)){
+                        departmentName=false;
+                    }
+                }
+                //时间2020-05
+                if(time!=null&&!"".equals(time)){
+                    if(!time.equals(sdf.format(his.getStartTime()))){
+
+                        startTime=false;
+                    }
+                }
+                if(startPeople && departmentName && startTime){
+                    temp.add(his);
+                }
+            }
+            List<HistoricProcessInstance> subList = ProcessUtils.getHistoricProcessInstanceByYeShu(temp,yeshu);
+            //过滤完成生成Map数据
+            for (HistoricProcessInstance hh:subList) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("proname", hh.getName());
+                map.put("processDefinitionID",hh.getProcessDefinitionId());
+                map.put("processInstanceId", hh.getId());
+                map.put("requestid",hh.getBusinessKey());
+                map.put("startTime",sdf.format(hh.getStartTime()));
+                Date endTime = hh.getEndTime();
+                map.put("endTime", endTime==null ? "" : sdf.format(endTime));
+                if(endTime==null){
+                    Map<String, String> currentMap = ProcessUtils.getCurrentAssignee(taskService, hh.getId());
+                    map.put("currentAssignee",(String)currentMap.get("assignee"));
+                    map.put("nodeName",(String)currentMap.get("node"));
+                }else{
+                    map.put("currentAssignee","");
+                    map.put("nodeName","");
+                }
+                List<HistoricVariableInstance> hisVarList = historyService.createHistoricVariableInstanceQuery().
+                        processInstanceId(hh.getId()).list();
+                for(HistoricVariableInstance h:hisVarList){
+                    if("process_formKey".equals(h.getVariableName())){
+                        map.put("reportName",(String)h.getValue());
+                    }
+                    if("process_userRealName".equals(h.getVariableName())){
+                        map.put("startRealName",(String)h.getValue());
+                    }
+                    if("process_state".equals(h.getVariableName())){
+                        map.put("status",(String)h.getValue());
+                    }
+                }
+                List<String> deps = ProcessUtils.getDepsAndPostByUserName(hh.getStartUserId());
+                String dep="";
+                for(int j=0;j<deps.size();j++){
+                    dep+=deps.get(j)+",";
+                }
+                map.put("dep","".equals(dep) ? dep : dep.substring(0,dep.length()-1));
+                result.add(map);
+            }
+
+            jr.setMsg("success");
+            jr.setResult(result);
+
+            jr.setTotal(temp.size());
+            if(temp.size()<=10){
+                jr.setYeshu(1);
+            }else{
+                jr.setYeshu(temp.size()%10==0 ? temp.size()/10 : temp.size()/10+1);
             }
             return jr;
         }
@@ -1844,6 +1804,7 @@ public class processInfo {
                     new Object[]{userName});
             List<String> list1 = new ArrayList<>();
             List<Map<String, Object>> mapList=new ArrayList<>();
+            //过滤重复proInstanceId
             for(int i=0;i<list_temp.size();i++){
                 String proInstanceId=list_temp.get(i).get("proInstanceId")==null?"":list_temp.get(i).get("proInstanceId").toString();
                 if(!list1.contains(proInstanceId)){
@@ -1851,53 +1812,57 @@ public class processInfo {
                     mapList.add(list_temp.get(i));
                 }
             }
-            List<Map<String, Object>> list11=new ArrayList<>();
+            //过滤HistoricProcessInstance为空的
+            List<Map<String, Object>> hisProList=new ArrayList<>();
             for(int i=0;i<mapList.size();i++){
                 HistoricProcessInstance hisProInstance = historyService.createHistoricProcessInstanceQuery().
                         processInstanceId(mapList.get(i).get("proInstanceId").toString()).singleResult();
                 if(hisProInstance!=null){
-                    list11.add(mapList.get(i));
+                    Map<String, Object> mm=new HashMap<>();
+                    mm.put("proInstanceId",hisProInstance.getId());
+                    mm.put("taskid",mapList.get(i).get("taskid")==null?"":mapList.get(i).get("taskid").toString());
+                    mm.put("reportName",mapList.get(i).get("reportName")==null?"":mapList.get(i).get("reportName").toString());
+                    mm.put("hipro",hisProInstance);
+                    hisProList.add(mm);
                 }
             }
 
-            List<Map<String, Object>> list = ProcessUtils.getCountByYeShu(list11, yeshu);
+            List<Map<String, Object>> list = ProcessUtils.getCountByYeShu(hisProList, yeshu);
             List<Map<String, Object>> result=new ArrayList<>();
-            //  System.out.println(list);
             for (int i=0;i<list.size();i++) {
+                HistoricProcessInstance hisPro = (HistoricProcessInstance) list.get(i).get("hipro");
                 Map<String, Object> map = new HashMap<>();
-                HistoricProcessInstance hisProInstance = historyService.createHistoricProcessInstanceQuery().
-                        processInstanceId(list.get(i).get("proInstanceId").toString()).singleResult();
-                if(hisProInstance!=null){
                     String dep="";
                     //获取发起人部门
-                    List<String> deps = ProcessUtils.getDepsAndPostByUserName(hisProInstance.getStartUserId());
+                    List<String> deps = ProcessUtils.getDepsAndPostByUserName(hisPro.getStartUserId());
                     for(int j=0;j<deps.size();j++){
                         dep+=deps.get(j)+",";
                     }
                     map.put("dep", dep);
-                    if(hisProInstance.getEndTime()==null){
+                    if(hisPro.getEndTime()==null){
                         Map<String, VariableInstance> mapVariable = runtimeService.getVariableInstances(list.get(i).get("proInstanceId").toString());
                         String process_state=mapVariable.get("process_state").getTextValue();
                         process_formKey=mapVariable.get("process_formKey").getTextValue();
                         String process_userRealName=mapVariable.get("process_userRealName").getTextValue();
-                        Map<String, String> currentMap = ProcessUtils.getCurrentAssignee(taskService, hisProInstance.getId());
+                        Map<String, String> currentMap = ProcessUtils.getCurrentAssignee(taskService, hisPro.getId());
                         currentAssignee=currentMap.get("assignee")==null ? "" : currentMap.get("assignee").toString();
                         map.put("startPeople",process_userRealName);
                         map.put("proEndTime", "");
                         map.put("proStatus",process_state);
                     }else{
                         currentAssignee="";
-                        if(hisProInstance.getDeleteReason()==null){
+                        if(hisPro.getDeleteReason()==null){
                             map.put("proStatus","6");
                         }else {
                             //已删除流程
                             //已删除流程
-                            if("expired".equals(hisProInstance.getDeleteReason().trim())){
+                            if("expired".equals(hisPro.getDeleteReason().trim())){
                                 map.put("proStatus","9");
                             }else{
                                 map.put("proStatus","7");
                             }
                         }
+
                         List<HistoricVariableInstance> hisVarList = historyService.createHistoricVariableInstanceQuery().
                                 processInstanceId(list.get(i).get("proInstanceId").toString()).list();
                         for(HistoricVariableInstance h:hisVarList){
@@ -1907,7 +1872,7 @@ public class processInfo {
                                 process_formKey=h.getValue().toString();
                             }
                         }
-                        map.put("proEndTime", sdf.format(hisProInstance.getEndTime()));
+                        map.put("proEndTime", sdf.format(hisPro.getEndTime()));
 
                     }
                     String reportName= list.get(i).get("reportName") == null ? "" : list.get(i).get("reportName").toString();
@@ -1938,13 +1903,13 @@ public class processInfo {
                         map.put("proFormKey",reportName);
                     }
 
-                    map.put("businessKey", hisProInstance.getBusinessKey());
-                    map.put("proname", hisProInstance.getName());
-                    map.put("proStartTime", sdf.format(hisProInstance.getStartTime()));
-                    map.put("proDefineID", hisProInstance.getProcessDefinitionId());
-                    map.put("proInstanceId", hisProInstance.getId());
+                    map.put("businessKey", hisPro.getBusinessKey());
+                    map.put("proname", hisPro.getName());
+                    map.put("proStartTime", sdf.format(hisPro.getStartTime()));
+                    map.put("proDefineID", hisPro.getProcessDefinitionId());
+                    map.put("proInstanceId", hisPro.getId());
                     map.put("currentAssignee", currentAssignee);
-                    String s = list.get(i).get("taskid").toString();
+                    /*String s = list.get(i).get("taskid").toString();
                     String taskDefinitionKey="";
                     List<Map<String, Object>> list2 = jdbcTemplate.queryForList("SELECT * FROM ACT_HI_ACTINST WHERE TASK_ID_=?",
                             new Object[]{s});
@@ -1954,12 +1919,13 @@ public class processInfo {
                     else{
                         taskDefinitionKey="";
                     }
-                    map.put("activityid", taskDefinitionKey);
+                    map.put("activityid", taskDefinitionKey);*/
+                    map.put("activityid", "");
                     result.add(map);
-                }
+
             }
 
-            ProcessUtils.SortByStringTime(result,"proStartTime");
+         //   ProcessUtils.SortByStringTime(result,"proStartTime");
             if(flag){
                 jr.setResult(result);
                 jr.setMsg("success");
@@ -1968,11 +1934,11 @@ public class processInfo {
                 jr.setMsg("fail");
             }
 
-            jr.setTotal(list11.size());
-            if(list11.size()<=10){
+            jr.setTotal(hisProList.size());
+            if(hisProList.size()<=10){
                 jr.setYeshu(1);
             }else{
-                jr.setYeshu(list11.size()%10==0 ? list11.size()/10 : list11.size()/10+1);
+                jr.setYeshu(hisProList.size()%10==0 ? hisProList.size()/10 : hisProList.size()/10+1);
             }
             return jr;
         }catch ( Exception e){
@@ -2011,36 +1977,101 @@ public class processInfo {
                     mapList.add(list_temp.get(i));
                 }
             }
-            List<Map<String, Object>> list=new ArrayList<>();
+            //过滤HistoricProcessInstance为空的
+            List<Map<String, Object>> hisProList=new ArrayList<>();
             for(int i=0;i<mapList.size();i++){
                 HistoricProcessInstance hisProInstance = historyService.createHistoricProcessInstanceQuery().
                         processInstanceId(mapList.get(i).get("proInstanceId").toString()).singleResult();
                 if(hisProInstance!=null){
-                    list.add(mapList.get(i));
+                    Map<String, Object> mm=new HashMap<>();
+                    mm.put("proInstanceId",hisProInstance.getId());
+                    mm.put("taskid",mapList.get(i).get("taskid")==null?"":mapList.get(i).get("taskid").toString());
+                    mm.put("reportName",mapList.get(i).get("reportName")==null?"":mapList.get(i).get("reportName").toString());
+                    mm.put("hipro",hisProInstance);
+                    hisProList.add(mm);
                 }
             }
 
-            //List<Map<String, Object>> list = ProcessUtils.getCountByYeShu(list11, yeshu);
+            List<Map<String, Object>> listCondition =new ArrayList<>();
+            //条件查询
+            if((proName!=null&&!"".equals(proName))||(startPeople!=null&&!"".equals(startPeople))||(time!=null&&!"".equals(time))||
+                    (proInstanceid!=null&&!"".equals(proInstanceid))||(status!=null&&!"".equals(status))||(depName!=null&&!"".equals(depName)))
+            {
+                UserService userService = UserService.getInstance();
+                for(Map<String, Object> m : hisProList){
+                    boolean proNameFlag=true;
+                    boolean startPeopleFlag=true;
+                    boolean depNameFlag=true;
+                    boolean startTimeFlag=true;
+                    boolean proInstanceidFlag=true;
+                    boolean statusFlag=true;
+                    HistoricProcessInstance hispro = (HistoricProcessInstance) m.get("hipro");
+                    if(proName!=null&&!"".equals(proName)){
+                        if(!hispro.getName().contains(proName)){
+                            proNameFlag=false;
+                        }
+                    }
+                    if(startPeople!=null&&!"".equals(startPeople)){
+                        User user = userService.getUserByUserName(hispro.getStartUserId());
+                        if(!startPeople.equals(user.getRealName())){
+                            startPeopleFlag=false;
+                        }
+                    }
+                    if(depName!=null&&!"".equals(depName)){
+                        List<String> deps = ProcessUtils.getDepsAndPostByUserName(hispro.getStartUserId());
+                        if(!deps.contains(depName)){
+                            depNameFlag=false;
+                        }
+                    }
+                    if(time!=null&&!"".equals(time)){
+                        if(!time.equals(sdf.format(hispro.getStartTime()))){
+                            startTimeFlag=false;
+                        }
+                    }
+                    if(proInstanceid!=null&&!"".equals(proInstanceid)){
+                        if(!proInstanceid.equals(hispro.getId())){
+                            proInstanceidFlag=false;
+                        }
+                    }
+                    if(status!=null&&!"".equals(status)){
+                        if("1".equals(status)){
+                            if(hispro.getEndTime()==null){
+                                statusFlag=false;
+                            }
+                        }else{
+                            if(hispro.getEndTime()!=null){
+                                statusFlag=false;
+                            }
+                        }
+                    }
+
+                    if(proNameFlag && startPeopleFlag && depNameFlag && startTimeFlag && proInstanceidFlag && statusFlag){
+                        listCondition.add(m);
+                    }
+                }
+
+            }else{
+                listCondition = hisProList;
+            }
+
+            List<Map<String, Object>> list = ProcessUtils.getCountByYeShu(listCondition, yeshu);
             List<Map<String, Object>> result=new ArrayList<>();
-            //  System.out.println(list);
             for (int i=0;i<list.size();i++) {
+                HistoricProcessInstance hisPro = (HistoricProcessInstance) list.get(i).get("hipro");
                 Map<String, Object> map = new HashMap<>();
-                HistoricProcessInstance hisProInstance = historyService.createHistoricProcessInstanceQuery().
-                        processInstanceId(list.get(i).get("proInstanceId").toString()).singleResult();
-                if(hisProInstance!=null){
                     String dep="";
                     //获取发起人部门
-                    List<String> deps = ProcessUtils.getDepsAndPostByUserName(hisProInstance.getStartUserId());
+                    List<String> deps = ProcessUtils.getDepsAndPostByUserName(hisPro.getStartUserId());
                     for(int j=0;j<deps.size();j++){
                         dep+=deps.get(j)+",";
                     }
                     map.put("dep", dep);
-                    if(hisProInstance.getEndTime()==null){
+                    if(hisPro.getEndTime()==null){
                         Map<String, VariableInstance> mapVariable = runtimeService.getVariableInstances(list.get(i).get("proInstanceId").toString());
                         String process_state=mapVariable.get("process_state").getTextValue();
                         process_formKey=mapVariable.get("process_formKey").getTextValue();
                         String process_userRealName=mapVariable.get("process_userRealName").getTextValue();
-                        Map<String, String> currentMap = ProcessUtils.getCurrentAssignee(taskService, hisProInstance.getId());
+                        Map<String, String> currentMap = ProcessUtils.getCurrentAssignee(taskService, hisPro.getId());
                         currentAssignee=currentMap.get("assignee")==null ? "" : currentMap.get("assignee").toString();
                         map.put("startPeople",process_userRealName);
                         map.put("proEndTime", "");
@@ -2048,12 +2079,12 @@ public class processInfo {
 
                     }else{
                         currentAssignee="";
-                        if(hisProInstance.getDeleteReason()==null){
+                        if(hisPro.getDeleteReason()==null){
                             map.put("proStatus","6");
                         }else {
                             //已删除流程
                             //已删除流程
-                            if("expired".equals(hisProInstance.getDeleteReason().trim())){
+                            if("expired".equals(hisPro.getDeleteReason().trim())){
                                 map.put("proStatus","9");
                             }else{
                                 map.put("proStatus","7");
@@ -2068,7 +2099,7 @@ public class processInfo {
                                 process_formKey=h.getValue().toString();
                             }
                         }
-                        map.put("proEndTime", sdf.format(hisProInstance.getEndTime()));
+                        map.put("proEndTime", sdf.format(hisPro.getEndTime()));
 
                     }
                     String reportName= list.get(i).get("reportName") == null ? "" : list.get(i).get("reportName").toString();
@@ -2099,13 +2130,13 @@ public class processInfo {
                         map.put("proFormKey",reportName);
                     }
 
-                    map.put("businessKey", hisProInstance.getBusinessKey());
-                    map.put("proname", hisProInstance.getName());
-                    map.put("proStartTime", sdf.format(hisProInstance.getStartTime()));
-                    map.put("proDefineID", hisProInstance.getProcessDefinitionId());
-                    map.put("proInstanceId", hisProInstance.getId());
+                    map.put("businessKey", hisPro.getBusinessKey());
+                    map.put("proname", hisPro.getName());
+                    map.put("proStartTime", sdf.format(hisPro.getStartTime()));
+                    map.put("proDefineID", hisPro.getProcessDefinitionId());
+                    map.put("proInstanceId", hisPro.getId());
                     map.put("currentAssignee", currentAssignee);
-                    String s = list.get(i).get("taskid").toString();
+                   /* String s = list.get(i).get("taskid").toString();
                     String taskDefinitionKey="";
                     List<Map<String, Object>> list2 = jdbcTemplate.queryForList("SELECT * FROM ACT_HI_ACTINST WHERE TASK_ID_=?",
                             new Object[]{s});
@@ -2114,120 +2145,21 @@ public class processInfo {
                     }
                     else{
                         taskDefinitionKey="";
-                    }
-                    map.put("activityid", taskDefinitionKey);
+                    }*/
+                    map.put("activityid", "");
                     result.add(map);
-                }
-            }
-            List<Map<String, Object>> result1 = new ArrayList<>();
-            //条件查询
-            if((proName!=null&&!"".equals(proName))||(startPeople!=null&&!"".equals(startPeople))||(time!=null&&!"".equals(time))||
-                    (proInstanceid!=null&&!"".equals(proInstanceid))||(status!=null&&!"".equals(status))||(depName!=null&&!"".equals(depName)))
-            {
-                if(proName!=null&&!"".equals(proName)){
-                    for(int k=0;k<result.size();k++) {
-                        String s = result.get(k).get("proname").toString();
-                        if (s.contains(proName)) {
-                            if(!result1.contains(result.get(k))){
-                                result1.add(result.get(k));
-                            }
-                        }
-                    }
-                    result=result1;
-                    result1 = new ArrayList<>();
-                }
-                if(startPeople!=null&&!"".equals(startPeople)){
-                    for(int k1=0;k1<result.size();k1++) {
-                        String s1 = result.get(k1).get("startPeople").toString();
-                        if (s1.contains(startPeople)) {
-                            if(!result1.contains(result.get(k1))){
-                                result1.add(result.get(k1));
-                            }
-                        }
-                    }
-                    result=result1;
-                    result1 = new ArrayList<>();
-                }
-                if(time!=null&&!"".equals(time)){
-                    for(int k2=0;k2<result.size();k2++) {
-                        String s1 = result.get(k2).get("proStartTime").toString();
-                        if (s1.contains(time)) {
-                            if(!result1.contains(result.get(k2))){
-                                result1.add(result.get(k2));
-                            }
-                        }
-                    }
-                    result=result1;
-                    result1 = new ArrayList<>();
-                }
-                if(proInstanceid!=null&&!"".equals(proInstanceid)){
-                    for(int k3=0;k3<result.size();k3++) {
-                        String s1 = result.get(k3).get("proInstanceId").toString();
-                        if (s1.contains(proInstanceid)) {
-                            if(!result1.contains(result.get(k3))){
-                                result1.add(result.get(k3));
-                            }
-                        }
-                    }
-                    result=result1;
-                    result1 = new ArrayList<>();
-                }
-                if(status!=null&&!"".equals(status)){
-                    if("1".equals(status)){//完成
-                        for(int k4=0;k4<result.size();k4++) {
-                            String s11 = result.get(k4).get("proStatus").toString();
-                            if("6".equals(s11) || "9".equals(s11)){
-                                if(!result1.contains(result.get(k4))){
-                                    result1.add(result.get(k4));
-                                }
-                            }
-                        }
-                        result=result1;
-                        result1 = new ArrayList<>();
-                    }else  if("0".equals(status)){//未完成
-                        for(int k5=0;k5<result.size();k5++) {
-                            String s22 = result.get(k5).get("proStatus").toString();
-                            if(!"6".equals(s22) && !"9".equals(s22)){
-                                if(!result1.contains(result.get(k5))){
-                                    result1.add(result.get(k5));
-                                }
-                            }
-                        }
-                        result=result1;
-                        result1 = new ArrayList<>();
-                    }
-                }
-                if(depName!=null&&!"".equals(depName)){
-                    for(int k6=0;k6<result.size();k6++) {
-                        String s = result.get(k6).get("dep").toString();
-                        if (s.contains(depName)) {
-                            if(!result1.contains(result.get(k6))){
-                                result1.add(result.get(k6));
-                            }
-                        }
-                    }
-                    result=result1;
-                    result1 = new ArrayList<>();
-                }
 
             }
-            ProcessUtils.SortByStringTime(result,"proStartTime");
-            List<Map<String, Object>> resultByYeShu = ProcessUtils.getCountByYeShu(result, yeshu);
-            if(flag){
-                jr.setResult(resultByYeShu);
-                jr.setMsg("success");
-            }else{
-                jr.setResult("流程实例"+message+","+"用户名"+userName+",查询出错");
-                jr.setMsg("fail");
-            }
-            jr.setTotal(result.size());
-            if(result.size()<=10){
+            jr.setResult(result);
+            jr.setMsg("success");
+            jr.setTotal(listCondition.size());
+            if(listCondition.size()<=10){
                 jr.setYeshu(1);
             }else{
-                jr.setYeshu(result.size()%10==0 ? result.size()/10 : result.size()/10+1);
+                jr.setYeshu(listCondition.size()%10==0 ? listCondition.size()/10 : listCondition.size()/10+1);
             }
             return jr;
-        }catch ( Exception e){
+        }catch (Exception e){
             jr.setResult(e.getMessage());
             jr.setMsg("fail");
             return jr;

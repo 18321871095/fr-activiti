@@ -6,8 +6,6 @@ import com.fr.decision.webservice.bean.user.UserDetailInfoBean;
 import com.fr.decision.webservice.v10.login.LoginService;
 import com.fr.decision.webservice.v10.user.UserService;
 import com.fr.stable.script.CalculatorProvider;
-import com.fr.web.core.B.OB;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Process;
 import org.activiti.engine.HistoryService;

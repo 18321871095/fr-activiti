@@ -1,46 +1,73 @@
-<div class="modal" ng-controller="KisBpmAssignmentPopupCtrl">
+<div class="modal" ng-controller="KisBpmAssignmentPopupCtrl" style="box-sizing: border-box; border-radius: 10px;font-family: 'Microsoft YaHei';">
     <div class="modal-dialog">
-        <div class="modal-content" style="margin-left: -120px;width: 900px;">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="close()">&times;</button>
-                <h2 translate>PROPERTY.ASSIGNMENT.TITLE</h2>
+        <div class="modal-content" style="margin-left: -120px;width: 900px;border-radius: 10px;!important;">
+            <div class="modal-header" style="background:#f2f4f7; height: 60px; line-height: 60px;border-radius: 10px 10px 0 0; border-bottom: none; ">
+                <button type="button" class="close" style="font-size: 30px;" data-dismiss="modal" aria-hidden="true" ng-click="close()">&times;</button>
+                <h2 translate style=" color: #333; font-size: 18px;">PROPERTY.ASSIGNMENT.TITLE</h2>
             </div>
             <div class="modal-body">
-                <div class="row row-no-gutter">
+                <div class="row row-no-gutter" style="margin: 0; padding: 0;">
                     <div class="form-group">
                         <label>办理人类型：</label>
-                        <input type="radio" ng-model="assigneRadioType"   value="0" />用户名&nbsp;&nbsp;&nbsp;
-                        <input type="radio" ng-model="assigneRadioType"   value="1" />角色
+                        <input type="radio" ng-model="assigneRadioType"   value="0" />&nbsp;&nbsp;用户名&nbsp;&nbsp;&nbsp;
+                        <input type="radio" ng-model="assigneRadioType"   value="1" />&nbsp;&nbsp;角色
                     </div>
                 </div>
-            	<div class="row row-no-gutter">
-            		<div class="form-group">
-            			<label for="assigneeField">{{'PROPERTY.ASSIGNMENT.ASSIGNEE' | translate}}</label>
-            			<input  ng-click="showAssign()"  type="text" id="assigneeField" class="form-control" ng-model="assignment.assignee" placeholder="{{'PROPERTY.ASSIGNMENT.ASSIGNEE_PLACEHOLDER' | translate}}" />
+            	<div class="row row-no-gutter" style="margin: 0; padding: 0;">
+            		<div class="form-group ">
+                        <div class="clearfix">
+                            <div class="" style="float: left;width: 16%; line-height: 30px;" >
+                                <label for="assigneeField">{{'PROPERTY.ASSIGNMENT.ASSIGNEE' | translate}}:</label>
+                            </div>
+
+                            <div class="" style="float: right; width: 84%;">
+                                <input style="border-radius: 5px;"  ng-click="showAssign()"  type="text" id="assigneeField" class="form-control" ng-model="assignment.assignee" placeholder="{{'PROPERTY.ASSIGNMENT.ASSIGNEE_PLACEHOLDER' | translate}}" />
+
+                            </div>
+                        </div>
+
                         <input style="display: none;" type="text" id="assigneTemp"  ng-model="assignment.assigneTemp" value=""  />
-                        <div id="AssignDiv" style="width: 100%;height: 320px;border: 1px solid #000;margin-top: 5px;display: none">
+                        <div id="AssignDiv" style="width: 100%;height: 320px;border: 1px solid #e2e2e2;margin-top: 5px;display: none">
                             <iframe width="100%"  height="100%" frameborder="0"
                                     src="{{assigneRadioType=='0'?'static/jsp/util/getPeoples.jsp?state=1':'static/jsp/util/getPeoples.jsp?state=4'}}"></iframe>
                         </div>
             		</div>
             	</div>
 
-                <div class="row row-no-gutter">
+                <div class="row row-no-gutter" style="margin: 0; padding: 0;">
                     <div class="form-group">
                         <label>抢占式类型：</label>
-                        <input type="radio" ng-model="preemptiveRadioType"    value="0" />用户名&nbsp;&nbsp;&nbsp;
-                        <input type="radio" ng-model="preemptiveRadioType"    value="1" />角色
+                        <input type="radio" ng-model="preemptiveRadioType"    value="0" />&nbsp;&nbsp;用户名&nbsp;&nbsp;&nbsp;
+                        <input type="radio" ng-model="preemptiveRadioType"    value="1" />&nbsp;&nbsp;角色
                     </div>
                 </div>
             	
-                <div class="row row-no-gutter">
+                <div class="row row-no-gutter" style="margin: 0; padding: 0;">
                     <div class="form-group">
-                    	<label for="userField">{{'PROPERTY.ASSIGNMENT.CANDIDATE_USERS' | translate}}</label>
+
+                        <div class="clearfix">
+                            <div class="" style="float: left;width: 16%; line-height: 30px;" >
+                                <label for="userField">{{'PROPERTY.ASSIGNMENT.CANDIDATE_USERS' | translate}}:</label>
+                            </div>
+
+                            <div class="" style="float: right; width: 84%;">
+                                <input style="border-radius: 5px;" placeholder="请选择候选人" ng-click="showGroup()"
+                                        id="userField" class="form-control" type="text" value="{{assignment.candidateUsers[0].value}}" />
+
+                            </div>
+                        </div>
+
+
+
+
+
                        <!-- <div ng-repeat="candidateUser in assignment.candidateUsers">-->
-            	            <input  placeholder="请选择候选人" ng-click="showGroup()"
-                                    id="userField" class="form-control" type="text" value="{{assignment.candidateUsers[0].value}}" />
+
+
+
+
                            <input style="display: none;" style="width: 100%"  type="text" id="preemptiveTemp" maxlength="10000000"  ng-model="assignment.preemptiveTemp" value="" />
-                            <div id="GroupDiv" style="width: 100%;height: 320px;border: 1px solid #000;margin-top: 5px;display: none">
+                            <div id="GroupDiv" style="width: 100%;height: 320px;border: 1px solid #e2e2e2;margin-top: 5px;display: none">
                                 <iframe width="100%" id="GroupDivIframe"  height="100%" frameborder="0"
                                         src="{{preemptiveRadioType=='0'?'static/jsp/util/getPeoples.jsp?state=3':'static/jsp/util/getPeoples.jsp?state=5'}}"></iframe>
                             </div>

@@ -11,45 +11,59 @@
             cursor: pointer;
             position: relative;
             top: -4px;
+            left:0.5em;
+            -webkit-transition: all .3s ease-in 0s;
+                transition: all .3s ease-in 0s;
         }
       a:hover{
-          color: red;
+          color: #3296f5;
+          -webkit-transition: all .3s ease-in 0s;
+              transition: all .3s ease-in 0s;
       }
         .mydiv{
-            background: url(${ctx}/static/images/shanchu.jpg);
+            background: url(${ctx}/static/images/shanchu.png);
             background-size: cover;
             display: inline-block;
             width: 16px;
             height: 16px;
             cursor: pointer;
+            float:right;
+        }
+        #myul li{
+        line-height:30px;
         }
     </style>
 </head>
-<div style="/*border: 1px solid red;*/width: 30%;float: left;height: 98%">
-    <ul id="myul" style="line-height: 35px; margin: 10px 30px;">
+<body style="box-sizing:border-box;padding:15px;">
+<div style="border: 1px solid #e2e2e2;width: 30%;float: left;height: 98%;padding:15px;box-sizing:border-box;">
+    <ul id="myul" style="line-height: 30px;">
 
     </ul>
 </div>
 <div style="/*border: 1px solid #000;*/width: 68%;float: right;height: 98%">
-    <div style="margin: 5px">
+    <div style="">
         部门或岗位
     </div>
-    <div id="depAndpost" style="border: 1px solid #000;height: 100px;margin: 10px 10px;word-wrap:break-word;
+    <div id="depAndpost" style="border: 1px solid #e2e2e2;height: 100px;margin: 10px 0;word-wrap:break-word;    padding: 10px;
+                                                                                                                box-sizing: border-box;
 overflow-y: auto">
 
     </div>
     <br/>
-    <div style="margin: 5px">
+    <div style="">
         人员
     </div>
-    <div id="user" style="border: 1px solid #000;height: 100px;margin: 10px 10px;word-wrap:break-word;overflow-y: auto;">
+    <div id="user" style="border: 1px solid #e2e2e2;height: 100px;margin: 10px 0;word-wrap:break-word;    padding: 10px;
+                                                                                                          box-sizing: border-box;overflow-y: auto;">
 
     </div>
     <div style="margin-top: 100px;">
-        <button id="queding" style="margin-left: 435px;width: 50px;cursor: pointer;">确定</button>
+        <button id="queding" style="margin-left: 435px;cursor: pointer;display: inline-block;height: 30px;
+   line-height: 30px;background-color: #3296f5;color: #fff;white-space: nowrap;text-align: center;font-size:14px;
+   border: none;border-radius: 2px;cursor: pointer;" class="layui-btn">确定</button>
     </div>
 </div>
-<body>
+
 
 
 </body>
@@ -62,8 +76,8 @@ overflow-y: auto">
             $.post("${ctx}/processInfo/getReserveAuthority",{},function (data) {
                 if(data.msg=='success'){
                     for(var i=0;i<data.result.length;i++){
-                        $("#myul").append("<li><input name='quanxian' style='width: 18px;height: 18px' type='radio'/>" +
-                            "<a name='showDeatailsAuthority'>"+data.result[i].name+
+                        $("#myul").append("<li><input name='showDeatailsAuthority' style='width: 18px;height: 18px' type='radio'/>" +
+                            "<a>"+data.result[i].name+
                             "<input type='hidden' value="+"\""+data.result[i].groupid+"\""+" />"+
                             "<input type='hidden' value="+"\""+data.result[i].userid+"\""+" />"+
                             "<input type='hidden' value="+"\""+data.result[i].procdefid+"\""+" />"+
@@ -94,7 +108,7 @@ overflow-y: auto">
                 if(count==$("#myul").find("input[type='radio']").length){
                     layer.alert('请选择一个权限导入',{offset:'200px'})
                 }else {
-                    var index=layer.load(1);
+                    var index=layer.load(2);
                     $.post("${ctx}/processInfo/daoruAuthority",{
                         prodefinedid:"${param.procdefid}",arr:JSON.stringify(result)
                     },function (data) {

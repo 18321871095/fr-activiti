@@ -12,6 +12,7 @@ import com.fr.decision.webservice.v10.message.MessageService;
 import com.fr.decision.webservice.v10.user.UserService;
 import com.fr.json.JSONObject;
 import com.fr.script.Calculator;
+import com.fr.stable.StringUtils;
 import com.fr.stable.UtilEvalError;
 import com.fr.swift.query.info.bean.element.CalculatedFieldBean;
 import com.fr.third.v2.org.apache.poi.ss.formula.FormulaParseException;
@@ -79,76 +80,8 @@ public class mytest {
             runtimeService.setVariable("50126","process_state","77");
             runtimeService.deleteProcessInstance("50126","adminganyu");*/
 
-            int num=54;
-            List<Integer> list=new ArrayList<>();
-            for(int i=1;i<num;i++){
-                boolean flag=true;
-                for(int j=2;j<=i;j++){
-                    if(i%j==0 && num%j==0){
-                        flag=false;
-                        break;
-                    }
-                }
-                if(flag){
-                    list.add(i);
-                }
-            }
-            System.out.println(list);
-            System.out.println("欧拉值："+list.size());
-            System.out.println("模的指数表");
-            List< Map<String,Integer>> list1=new ArrayList<>();
-            for(int i=1;i<list.size();i++){
-                for(int j=1;j<=list.size();j++){
-                    double a=list.get(i);
-                    double pow = Math.pow(a, j);
-                    if( (pow-1)%num==0 ){
-                        Map<String,Integer> map=new HashMap<>();
-                        map.put("a",(int)a);
-                        map.put("ord",j);
-                        list1.add(map);
-                    }
-                }
-            }
-
-          //  System.out.println(list1);
-
-            for(Integer integer:list){
-                List< Map<String,Integer>> list2=new ArrayList<>();
-              for(Map<String,Integer> mm :list1){
-                  if(integer==mm.get("a")){
-                      list2.add(mm);
-                  }
-              }
-                System.out.println(list2);
-            }
-
-
-            System.out.println("模的以根的指数表");
-            int gen=5;
-            List< Map<String,Integer>> list2=new ArrayList<>();
-            for(Integer integer1:list){
-                for(int jj=1;jj<=num;jj++){
-                    double v = integer1 - Math.pow(gen, jj);
-                    if(v%num==0){
-                        Map<String,Integer> mm=new HashMap<>();
-                        mm.put("a",integer1);
-                        mm.put("zhishu",jj);
-                        list2.add(mm);
-                    }
-                }
-            }
-            System.out.println(list2);
-            for(Integer integer2:list){
-                List< Map<String,Integer>> list3=new ArrayList<>();
-                for(Map<String,Integer> mm :list2){
-                    if(integer2==mm.get("a")){
-                        list3.add(mm);
-                    }
-                }
-                System.out.println(list3);
-            }
-
-
+          String a="123";
+            System.out.println(a.contains("1234"));
 
 
 

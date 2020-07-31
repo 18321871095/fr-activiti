@@ -369,8 +369,11 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
             var orign=document.location.origin;
            // console.log(orign+ result)
             editorLayer.alert('保存成功,可在模型列表中查看',{offset:'200px',icon: 1},function(index) {
+               // console.log("url:"+orign+ result+"/"+"static/jsp/adminjsp/proDeployInfo.jsp")
                 window.parent.FS.tabPane.closeActiveTab();
                 window.parent.FS.tabPane.addItem({title:"部署列表",src:orign+ result+"/"+"static/jsp/adminjsp/proDeployInfo.jsp"});
+
+               // window.location.href=orign+ result+"/"+"static/jsp/adminjsp/proDeployInfo.jsp";
             });
             //window.parent.FS.tabPane.closeActiveTab();
            // window.parent.FS.tabPane.addItem({title:"部署列表",src:"static/jsp/adminjsp/proDeployInfo.jsp"});
@@ -879,8 +882,9 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
                           }
                       })
                       .error(function (data, status, headers, config) {
+                          editorLayer.close(index);
                           $scope.error = {};
-                          console.log('Something went wrong when updating the process model:' + JSON.stringify(data));
+                          console.log('保存流程图模型异常:' + JSON.stringify(data));
                           $scope.status.loading = false;
                       });
 

@@ -8,20 +8,93 @@
 <link rel="stylesheet" href="${ctx}/static/layui/css/layui.css">
 <head>
     <style>
-        .myli{
-            cursor: pointer;
-        }
-        .myli:hover{
-            color: red;
-        }
+       html,body{
+             font-family: "Microsoft YaHei";
+             }
+              .myli{
+                  cursor: pointer;
+                  font-size:14px;
+                  color:#333;
+              }
+              .myli:hover{
+                  color: #3296f5;
+              }
         .people_span{
             cursor: pointer;
-            padding-right: 10px;
+            height: 30px;
+                line-height: 30px;
+                padding-left: 10px;
+                padding-right: 10px;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                position: relative;
+                float: left;
+                margin-top: 8px;
+                margin-right: 10px;
+                margin-bottom: 8px;
+            background-color: rgba(54,133,242,.1);
+            -webkit-transition:all .3 sease-in-out;
+             -moz-transition:all .3 sease-in-out;
+             -o-transition:all .3 sease-in-out;
+             transition:all .3 sease-in-out;
         }
         .people_span:hover{
-            color: blue;
-            text-decoration: underline;
+         -webkit-transition:all .3 sease-in-out;
+                     -moz-transition:all .3 sease-in-out;
+                     -o-transition:all .3 sease-in-out;
+                     transition:all .3 sease-in-out;
+            background-color: #3685f2;
+               border-radius: 2px;
+                color: #fff;
+            height: 30px;
+                line-height: 30px;
+                padding-left: 10px;
+                padding-right: 10px;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                position: relative;
+                float: left;
+                margin-top: 8px;
+                margin-right: 10px;
+                margin-bottom: 8px;
+
         }
+         .layui-form-item .layui-inline {
+                    margin-bottom: 0;
+                    margin-right: 10px;
+                }
+                .layui-form-item{ margin-bottom:5px;}
+        .layui-input, .layui-select, .layui-textarea {
+            height: 30px;
+            line-height: 1.3;
+            line-height: 38px \9;
+            border-width: 1px;
+            border-style: solid;
+            background-color: #fff;
+            border-radius: 2px;
+        }
+        .layui-btn {
+            display: inline-block;
+            height: 30px;
+            line-height: 30px;
+            padding: 0 18px;
+            background-color: #3296f5;
+            color: #fff;
+            white-space: nowrap;
+            text-align: center;
+            font-size: 14px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+         .layui-layer-title{
+                    cursor: move;
+                    font-size: 22px;
+                    height: 60px;
+                    line-height: 60px;
+                }
 
     </style>
 
@@ -35,40 +108,86 @@
         }
     %>
 </head>
-<body style="padding: 0px;margin: 0px">
-<div style="width: 38%;height: 50%;float: left;overflow-y:auto;border: 1px solid #e6e6e6">
-    <span style="font-size: 15px">部门：</span>
-    <input id="depName" type="text" placeholder="模糊查询部门名称" /><button onclick="selDep()">搜索</button>
-    <hr style="margin: 5px 0px">
+<body style="padding: 0 20px;margin:0px;box-sizing:border-box;">
+<div style="width: 38%;height: 50%;float: left;overflow-y:auto;border: 1px solid #e6e6e6;box-sizing:border-box;">
+
+     <div class="layui-form-item" style="margin-top:5px;">
+          <div class="layui-inline">
+            <label class="layui-form-label" style="width:auto;padding:0 15px;line-height:30px;">部门：</label>
+            <div class="layui-input-inline" style=" width: 170px;">
+              <input id="depName" type="text" placeholder="模糊查询部门名称" class="layui-input">
+            </div>
+              <div class="layui-input-inline" style=" width: 60px;">
+                <button class="layui-btn" lay-submit="" lay-filter="demo1" onclick="selDep()">搜索</button>
+              </div>
+              </div>
+            </div>
+
+
+    <%--<span style="font-size: 15px">部门：</span>
+    <input id="depName" type="text" placeholder="模糊查询部门名称1111" /><button onclick="selDep()">搜索</button>--%>
+    <hr style="margin: 5px 0px;height:1px;background-color: #e2e2e2;border:none;">
     <ul id="department" style="line-height: 37px;padding: 0px 10px;font-size: 18px">
     </ul>
 </div>
-<div style="width: 18%;height: 50%;float: left;overflow-y:auto;border: 1px solid #e6e6e6">
-    <span style="font-size: 15px">职位：</span><hr style="margin: 5px 0px">
+<div style="width: 19%;height: 50%;float: left;overflow-y:auto;border: 1px solid #e6e6e6;box-sizing:border-box;">
+ <div class="layui-form-item" style="margin-top:5px;">
+          <div class="layui-inline">
+            <span class="layui-form-label" style="width:auto;padding:0 15px;line-height:30px;">职位：</span>
+              </div>
+            </div>
+    <%--<span style="font-size: 15px">职位：</span>--%>
+    <hr style="margin: 5px 0px;height:1px;background-color: #e2e2e2;border:none;">
     <ul id="position" style="line-height: 37px;padding: 0px 10px;font-size: 18px">
     </ul>
 </div>
-<div style="width: 43%;height: 50%;float: left;overflow-y:auto;border: 1px solid #e6e6e6">
-    <span style="font-size: 15px">人员：</span><hr style="margin: 5px 0px">
+<div style="width: 43%;height: 50%;float: left;overflow-y:auto;border: 1px solid #e6e6e6;box-sizing:border-box;">
+ <div class="layui-form-item" style="margin-top:5px;">
+              <div class="layui-inline">
+                <span class="layui-form-label" style="width:auto;padding:0 15px;line-height:30px;">人员：</span>
+                  </div>
+                </div>
+    <%--<span style="font-size: 15px">人员：</span>--%>
+    <hr style="margin: 5px 0px;height:1px;background-color: #e2e2e2;border:none;">
     <ul id="user" style="line-height: 37px;padding: 0px 10px;font-size: 18px">
     </ul>
 </div>
-<div style="float: left;width: 86%" >
-    <span>所选部门或岗位</span>
-    <div id="depOrPos" style="border: 1px solid #e6e6e6;width: 100%;height: 150px;margin-left: 110px;
-    word-wrap:break-word;overflow-y: auto"></div>
+<div style="float: left;width: 100%;box-sizing:border-box;" >
+
+
+     <div class="layui-row" style="margin-top:15px;">
+        <div class="layui-col-xs2">
+          <div class="">所选部门或岗位</div>
+        </div>
+        <div class="layui-col-xs10">
+          <div id="depOrPos" style="border: 1px solid #e6e6e6;width: 100%;height: 150px;padding:0 5px;box-sizing:border-box;word-wrap:break-word;overflow-y: auto"></div>
+        </div>
+      </div>
+
+     <%--<span>所选部门或岗位</span>
+    <div id="depOrPos" style="border: 1px solid #e6e6e6;width: 100%;height: 150px;margin-left: 110px;word-wrap:break-word;overflow-y: auto"></div>--%>
 </div>
-<div style="float: left;width: 86%">
-    <span>所选人员</span>
-    <div id="people" style="border: 1px solid #e6e6e6;width: 100%;height: 150px;margin-left: 110px;word-wrap:break-word;
-overflow-y: auto;">
+<div style="float: left;width: 100%">
+
+
+     <div class="layui-row" style="margin-top:15px;">
+        <div class="layui-col-xs2">
+          <div class="">所选人员</div>
+        </div>
+        <div class="layui-col-xs10">
+           <div id="people" style="border: 1px solid #e6e6e6;width: 100%;height: 150px;padding:0 5px;box-sizing:border-box;word-wrap:break-word;overflow-y: auto;">
+         </div>
+        </div>
+      </div>
+    <%--<span>所选人员</span>
+    <div id="people" style="border: 1px solid #e6e6e6;width: 100%;height: 150px;margin-left: 110px;word-wrap:break-word;overflow-y: auto;">--%>
 
       <%--  <span onclick="deletePeople(this)" class="people_span">Lily(孙红)</span>
         <span onclick="deletePeople(this)" class="people_span">Mike(麦克)</span>--%>
 
-    </div>
+    <%--</div>--%>
 </div>
-<div style="float: left;color: red;font-weight: bold;">说明：选择部门默认该部门下的所有岗位都有权限，选择岗位默认该岗位下所有用户有权限</div>
+<div style="float: left;color: red;font-weight: bold;font-size:12px;margin-top:5px;">说明：选择部门默认该部门下的所有岗位都有权限，选择岗位默认该岗位下所有用户有权限</div>
 <div style="float: right;margin-top: 35px;margin-right: 50px;">
     <button class="layui-btn" id="reserve">保存</button>
     <br/> <br/>
@@ -144,8 +263,10 @@ overflow-y: auto;">
             }
         });
 
-        layui.use('layer', function() {
+        layui.use(['form','layer'], function() {
+         var form = layui.form,
             layer=layui.layer;
+
         });
 
         $("#reserve").click(function () {

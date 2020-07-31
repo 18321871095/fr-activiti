@@ -137,7 +137,7 @@ position: absolute; left: -10px; top: -10px; color: #fff;">
             control_laydate = layui.laydate;
             control_laydate.render({
                 elem: '#time' //指定元素
-                ,type: 'month'
+                ,type: 'date'
             });
             initControl(1,true);
 

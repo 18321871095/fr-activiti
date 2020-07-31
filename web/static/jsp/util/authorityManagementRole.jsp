@@ -8,19 +8,86 @@
 <link rel="stylesheet" href="${ctx}/static/layui/css/layui.css">
 <head>
     <style>
-        .myli{
+         html,body{
+                     font-family: "Microsoft YaHei";
+                     }
+                      .myli{
+                          cursor: pointer;
+                          font-size:14px;
+                          color:#333;
+                          -webkit-transition: all .3s ease-in 0s;
+                              transition: all .3s ease-in 0s;
+                      }
+                      .myli:hover{
+                          color: #3296f5;
+                          -webkit-transition: all .3s ease-in 0s;
+                              transition: all .3s ease-in 0s;
+                      }
+                .people_span{
+                    cursor: pointer;
+                    height: 30px;
+                        line-height: 30px;
+                        padding-left: 10px;
+                        padding-right: 10px;
+                        text-align: center;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        position: relative;
+                        float: left;
+                        margin-top: 8px;
+                        margin-right: 10px;
+                        margin-bottom: 8px;
+                    background-color: rgba(54,133,242,.1);
+                   -webkit-transition: all .3s ease-in 0s;
+                       transition: all .3s ease-in 0s;
+                }
+                .people_span:hover{
+               -webkit-transition: all .3s ease-in 0s;
+                   transition: all .3s ease-in 0s;
+                    background-color: #3685f2;
+                       border-radius: 2px;
+                        color: #fff;
+                    height: 30px;
+                        line-height: 30px;
+                        padding-left: 10px;
+                        padding-right: 10px;
+                        text-align: center;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        position: relative;
+                        float: left;
+                        margin-top: 8px;
+                        margin-right: 10px;
+                        margin-bottom: 8px;
+
+                }
+ .layui-form-item .layui-inline {
+                    margin-bottom: 0;
+                    margin-right: 10px;
+                }
+                .layui-form-item{ margin-bottom:5px;}
+        .layui-input, .layui-select, .layui-textarea {
+            height: 30px;
+            line-height: 1.3;
+            line-height: 38px \9;
+            border-width: 1px;
+            border-style: solid;
+            background-color: #fff;
+            border-radius: 2px;
+        }
+        .layui-btn {
+            display: inline-block;
+            height: 30px;
+            line-height: 30px;
+            padding: 0 18px;
+            background-color: #3296f5;
+            color: #fff;
+            white-space: nowrap;
+            text-align: center;
+            font-size: 14px;
+            border: none;
+            border-radius: 2px;
             cursor: pointer;
-        }
-        .myli:hover{
-            color: red;
-        }
-        .people_span{
-            cursor: pointer;
-            padding-right: 10px;
-        }
-        .people_span:hover{
-            color: blue;
-            text-decoration: underline;
         }
 
     </style>
@@ -35,20 +102,49 @@
         }
     %>
 </head>
-<body style="padding: 0px;margin: 0px">
-<div style="width: 38%;height: 50%;float: left;border: 1px solid #e6e6e6">
-    <span style="font-size: 15px">角色：</span>
-    <input id="RoleName" type="text" placeholder="模糊查询角色名称" /><button onclick="selRole11()">搜索</button>
+<body style="padding: 0 20px;margin:0px;box-sizing:border-box;">
+<div style="width: 45%;height: 50%;float: left;border: 1px solid #e6e6e6;box-sizing:border-box;">
+
+
+ <div class="layui-form-item" style="margin-top:5px;">
+          <div class="layui-inline">
+            <label class="layui-form-label" style="width:auto;padding:0 15px;line-height:30px;">角色：</label>
+            <div class="layui-input-inline" style=" width: 170px;">
+              <input id="RoleName" type="text" placeholder="模糊查询角色名称" class="layui-input">
+            </div>
+              <div class="layui-input-inline" style=" width: 60px;">
+                <button class="layui-btn" lay-submit="" lay-filter="demo1" onclick="selRole11()">搜索</button>
+              </div>
+              </div>
+            </div>
+
+
+    <%--<span style="font-size: 15px">角色：</span>
+    <input id="RoleName" type="text" placeholder="模糊查询角色名称" /><button onclick="selRole11()">搜索</button>--%>
     <hr style="margin: 5px 0px">
-    <div style="width: 100%;height: 89%;overflow-y:auto;">
+    <div style="width: 100%;height: 83%;overflow-y:auto;">
         <ul id="Role" style="line-height: 37px;padding: 0px 10px;font-size: 18px">
         </ul>
     </div>
+
+
+
+
 </div>
-<div style="width: 43%;height: 50%;float: left;border: 1px solid #e6e6e6">
-    <span style="font-size: 15px">人员：</span><hr style="margin: 5px 0px">
-    <div style="width: 100%;height: 89%;overflow-y:auto;">
-        <ul id="user" style="line-height: 37px;padding: 0px 10px;font-size: 18px">
+
+
+<div style="width: 55%;height: 50%;float: left;border: 1px solid #e6e6e6;box-sizing:border-box;">
+
+<div class="layui-form-item" style="margin-top:5px;">
+              <div class="layui-inline">
+                <span class="layui-form-label" style="width:auto;padding:0 15px;line-height:30px;">人员：</span>
+                  </div>
+                </div>
+
+    <%--<span style="font-size: 15px">人员：</span>--%>
+    <hr style="margin: 5px 0px">
+    <div style="width: 100%;height: 83%;overflow-y:auto;">
+        <ul id="user" style="line-height: 37px;padding: 0px 10px;font-size: 14px">
         </ul>
     </div>
 </div>
@@ -61,15 +157,33 @@
 </div>
 --%>
 
-<div style="float: left;width: 86%">
+<div style="float: left;width: 100%">
+<div class="layui-row" style="margin-top:15px;">
+        <div class="layui-col-xs2">
+          <div class="">所选人员</div>
+        </div>
+        <div class="layui-col-xs10">
+          <div id="people" style="border: 1px solid #e6e6e6;width: 100%;height: 150px;padding:0 5px;box-sizing:border-box;word-wrap:break-word;
+         overflow-y: auto;">
+
+             </div>
+        </div>
+      </div>
+</div>
+<%--<div style="float: left;width: 86%">
     <span>所选人员</span>
     <div id="people" style="border: 1px solid #e6e6e6;width: 100%;height: 150px;margin-left: 110px;word-wrap:break-word;
 overflow-y: auto;">
 
     </div>
-</div>
+
+</div>--%>
+
+
+
+
 <div style="float: right;margin-top: 35px;margin-right: 50px;">
-    <button class="layui-btn" id="reserve1" style="margin-top: 180px">保存</button>
+    <button class="layui-btn" id="reserve1" style="margin-top: 30px">保存</button>
     <br/> <br/>
 </div>
 
@@ -82,9 +196,11 @@ overflow-y: auto;">
     var tempdep;var RoleNameAll;
     $(function () {
 
-        layui.use('layer', function() {
-            layer=layui.layer;
-        });
+       layui.use(['form','layer'], function() {
+                var form = layui.form,
+                   layer=layui.layer;
+
+               });
 
         //获取角色
         $.ajax({

@@ -67,7 +67,7 @@
     
     "PROPERTY.REMOVED" : "removed",
     "PROPERTY.EMPTY" : "请填写",
-    "PROPERTY.PROPERTY.EDIT.TITLE" : "\"{{title}}\"",
+    "PROPERTY.PROPERTY.EDIT.TITLE" : "{{title}}",
     
     "PROPERTY.FEEDBACK.TITLE" : "Please fill-in your feedback",
     

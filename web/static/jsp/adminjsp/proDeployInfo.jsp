@@ -648,7 +648,7 @@ position: absolute; left: -10px; top: -10px; color: #fff;">
                 myprodefinedid=mythis.parents("tr").find("input").eq(0).val();
                 quedingSelDepAndRoleIndex= deploylayer.open({
                     type: 1,
-                  title:'类别',
+                    title:'类别',
                       area: ['300px', '200px'],
                       offset:'20px',
                     content: '<div style="text-align: center;margin-top: 20px;margin-bottom: 20px;"><select id="selDepAndRole" style="height: 30px">\n' +
@@ -700,8 +700,8 @@ position: absolute; left: -10px; top: -10px; color: #fff;">
                             type: 1,
                             area:["300px","150px"],
                             offset:"100px",
-                            content: '<div style="text-align: center"><input id="quanxianname" placeholder="请输入名称" /></div>'+
-                            '<div style="text-align: center;"><button id='+procdefid+' style="width: 100px;cursor: pointer;" name="quedingquanxian">确定</button></div>'
+                            content: '<div style="text-align: center;margin-top: 20px;"><input id="quanxianname" style="height: 30px;" placeholder="请输入名称" /></div>'+
+                            '<div style="text-align: center;margin-top: 15px;"><button class="layui-btn" id='+procdefid+'  name="quedingquanxian">确定</button></div>'
                             , success: function(layero, index){
                               $("#quanxianname").val(mydata);
                                 reserveAuthorityName=mydata;
