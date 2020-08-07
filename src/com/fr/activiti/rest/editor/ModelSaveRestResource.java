@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
+import com.fr.tw.util.PreventXSS;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RepositoryService;
@@ -63,8 +64,8 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
       
       modelJson.put(MODEL_NAME, values.getFirst("name"));
       modelJson.put(MODEL_DESCRIPTION, values.getFirst("description"));
-      model.setMetaInfo(modelJson.toString());
-      model.setName(values.getFirst("name"));
+      model.setMetaInfo( PreventXSS.delHTMLTag(modelJson.toString()));
+      model.setName(PreventXSS.delHTMLTag(values.getFirst("name")));
       
       repositoryService.saveModel(model);
       

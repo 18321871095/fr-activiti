@@ -81,8 +81,8 @@ public class MobileController {
                     if(processDefinition.getDescription()==null && model!=null){
                         Map<String,Object> maps=new HashMap<String,Object>();
                         maps.put("depid",deployment.getId());
-                        maps.put("deName",ProcessUtils.getProName(deployment.getName()));
-                        maps.put("deNameParam",ProcessUtils.getProNameParam(deployment.getName()));
+                        maps.put("deName",ProcessUtils.getProName(PreventXSS.delHTMLTag(deployment.getName())));
+                        maps.put("deNameParam",ProcessUtils.getProNameParam(PreventXSS.delHTMLTag(deployment.getName())));
                         maps.put("processDefinitionID",processDefinition.getId());
                         List<Map<String, Object>> list1 = jdbcTemplate.queryForList("" +
                                 "SELECT * FROM CLASSIFY WHERE ID=?", new Object[]{deployment.getCategory()});
@@ -234,8 +234,8 @@ public class MobileController {
                                                 MultipartFile file, String state, HttpServletRequest request){
 
         String processDefinitionID=request.getParameter("processDefinitionID");
-        String commentinfo=request.getParameter("commentinfo");
-        String proname=request.getParameter("proname");
+        String commentinfo=PreventXSS.delHTMLTag(request.getParameter("commentinfo"));
+        String proname=PreventXSS.delHTMLTag(request.getParameter("proname"));
         String requestid= request.getParameter("requestid");
         String reportName= request.getParameter("reportName");
         String taskid= request.getParameter("taskid");
@@ -286,7 +286,7 @@ public class MobileController {
             }
             //保存操作信息
             jdbcTemplate.update("INSERT INTO PROOPREATEINFO(ID,PROINSTANCEID,TASKID,OPREATENAME,OPREATEREALNAME,OPREATETIME,OPREATETYPE,NODENAME,MYCOMMENT,ATTACHMENT,REPORTNAME,PRONAME) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
-                    new Object[]{ProcessUtils.getUUID(),processInstance.getId(),temp_taskid,username,userRealName,new Date(),1,temp_applicationNodeName, PreventXSS.delHTMLTag(commentinfo),attachmentid,taskEntity.getFormKey(),proname});
+                    new Object[]{ProcessUtils.getUUID(),processInstance.getId(),temp_taskid,username,userRealName,new Date(),1,temp_applicationNodeName, commentinfo,attachmentid,taskEntity.getFormKey(),proname});
 
             ProcessInstance pro = runtimeService.createProcessInstanceQuery().processInstanceId(processInstance.getId()).singleResult();
             if(pro!=null){
@@ -354,10 +354,10 @@ public class MobileController {
                 if(file!=null){
                     attachmentid=ProcessUtils.uploadAttachment(request,file);
                     update = jdbcTemplate.update("UPDATE PROOPREATEINFO SET OPREATETIME=?,MYCOMMENT=?,ATTACHMENT=? WHERE REQUESTID=?",
-                            new Object[]{new Date(),commentinfo,attachmentid,requestid});
+                            new Object[]{new Date(),PreventXSS.delHTMLTag(commentinfo),attachmentid,requestid});
                 }else {
                     update = jdbcTemplate.update("UPDATE PROOPREATEINFO SET OPREATETIME=?,MYCOMMENT=? WHERE REQUESTID=?",
-                            new Object[]{new Date(),commentinfo,requestid});
+                            new Object[]{new Date(),PreventXSS.delHTMLTag(commentinfo),requestid});
                 }
                 if(update>0) {
                     jr.setMsg("success");
@@ -372,7 +372,7 @@ public class MobileController {
                     attachmentid=ProcessUtils.uploadAttachment(request,file);
                 }
                 String sql="INSERT INTO PROOPREATEINFO(ID,OPREATENAME,OPREATEREALNAME,OPREATETIME,OPREATETYPE,NODENAME,MYCOMMENT,ATTACHMENT,REQUESTID,REPORTNAME,DEPLOYID,PRONAME) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
-                update=jdbcTemplate.update(sql,new Object[]{ProcessUtils.getUUID(),userName,userRealName,new Date(),2,taskName,commentinfo,
+                update=jdbcTemplate.update(sql,new Object[]{ProcessUtils.getUUID(),userName,userRealName,new Date(),2,taskName,PreventXSS.delHTMLTag(commentinfo),
                         attachmentid,requestid,reportName,deployid,proname});
                 if(update>0) {
                     jr.setMsg("success");
@@ -432,7 +432,7 @@ public class MobileController {
                 HistoricProcessInstance hps = historyService.createHistoricProcessInstanceQuery().
                         processInstanceId(t.getProcessInstanceId()).singleResult();
                 map.put("proStartTime", sdf.format(hps.getStartTime()));
-                map.put("proname", hps.getName());
+                map.put("proname", PreventXSS.delHTMLTag(hps.getName()));
                 map.put("userName", hps.getStartUserId());
                 //process_userRealName
                 map.put("userRealName",runtimeService.getVariableInstance(t.getProcessInstanceId(),
@@ -612,7 +612,7 @@ public class MobileController {
                     }
 
                     map.put("businessKey", hisProInstance.getBusinessKey());
-                    map.put("proname", hisProInstance.getName());
+                    map.put("proname", PreventXSS.delHTMLTag(hisProInstance.getName()));
                     map.put("proStartTime", sdf.format(hisProInstance.getStartTime()));
                     map.put("proDefineID", hisProInstance.getProcessDefinitionId());
                     map.put("proInstanceId", hisProInstance.getId());
@@ -764,7 +764,7 @@ public class MobileController {
                 HisMap.put("proEndTime", endTime);
                 HisMap.put("proCompleteState", completeState);
                 HisMap.put("prostate", process_state);
-                HisMap.put("proname", list.get(i).getName());
+                HisMap.put("proname", PreventXSS.delHTMLTag(list.get(i).getName()));
                 HisMap.put("userRealName",userRealName);
                 HisMap.put("currentAssignee",currentAssignee);
                 String applicationId=ProcessUtils.getApplicationActivitiId(list.get(i).getProcessDefinitionId(),

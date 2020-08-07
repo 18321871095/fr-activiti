@@ -8,6 +8,7 @@ import com.fr.json.JSONArray;
 import com.fr.json.JSONObject;
 import com.fr.tw.custom.*;
 import com.fr.tw.util.JSONResult;
+import com.fr.tw.util.PreventXSS;
 import com.fr.tw.util.ProcessUtils;
 import com.fr.tw.util.jobUtil;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
@@ -110,7 +111,7 @@ public class CreateProcess {
         for(int i=0;i<list.size();i++){
             Map<String, Object> map=new HashMap<>();
            map.put("id",list.get(i).get("id").toString());
-            map.put("classifyname",list.get(i).get("classifyname").toString());
+            map.put("classifyname",PreventXSS.delHTMLTag(list.get(i).get("classifyname").toString()));
             com.fr.decision.authority.data.User u = instance.getUserByUserName(list.get(i).get("tenantid").toString());
             map.put("tenantidname",u==null ? list.get(i).get("tenantid")+"("+""+")" :
                     list.get(i).get("tenantid")+"("+u.getRealName()+")");
@@ -143,11 +144,12 @@ public class CreateProcess {
     public String bancunClassify(String id,String name,HttpServletRequest request){
         String userName = LoginService.getInstance().getCurrentUserNameFromRequestCookie(request);
         //
-        List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT * FROM classify WHERE  classifyname=?", new Object[]{name});
+        String classifyname = PreventXSS.delHTMLTag(name);
+        List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT * FROM classify WHERE  classifyname=?", new Object[]{classifyname});
         if(list.size()>0){
             return "0";
         }else{
-            jdbcTemplate.update("INSERT INTO classify(id,classifyname,tenantid) VALUES (?,?,?)",new Object[]{id,name,userName});
+            jdbcTemplate.update("INSERT INTO classify(id,classifyname,tenantid) VALUES (?,?,?)",new Object[]{id,classifyname,userName});
             return "1";
         }
 
@@ -156,7 +158,8 @@ public class CreateProcess {
     @RequestMapping("/xiugaiClassify")
     @ResponseBody
     public String xiugaiClassify(String id,String name){
-            List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT * FROM classify WHERE  classifyname=?", new Object[]{name});
+        String classifyname = PreventXSS.delHTMLTag(name);
+            List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT * FROM classify WHERE  classifyname=?", new Object[]{classifyname});
             if (list.size() > 0) {
                return  "0";
             } else {
@@ -216,7 +219,7 @@ public class CreateProcess {
                 Map<String,Object> map=new HashMap<>();
                 if(!("Activi Molder".equals(model.getName()))){
                     map.put("molderId",model.getId());
-                    map.put("molderName",model.getName());
+                    map.put("molderName",PreventXSS.delHTMLTag(model.getName()));
                     map.put("createTime",sdf.format(model.getCreateTime()));
                     map.put("lastUpdataTime",sdf.format(model.getLastUpdateTime()));
                     String metaInfo = model.getMetaInfo();
@@ -229,7 +232,7 @@ public class CreateProcess {
                         classfifyNameid=list1.get(0).get("id")==null?"":list1.get(0).get("id").toString();
                         map.put("classfifyNameid",classfifyNameid);
                     }
-                    map.put("metaInfo",classfifyName);
+                    map.put("metaInfo",PreventXSS.delHTMLTag(classfifyName));
                     //1：已经部署  0：未部署
                     if(model.getCategory()==null || "".equals(model.getCategory())){
                         map.put("status","0");
@@ -342,7 +345,7 @@ public class CreateProcess {
                     DeploymentCache<BpmnModel> bpmnModelCache = ((ProcessEngineConfigurationImpl) processEngineConfiguration).getDeploymentManager().getBpmnModelCache();
                     bpmnModelCache.remove(processDefinitionId);
                     jdbcTemplate.update("UPDATE ACT_RE_MODEL SET CATEGORY_='deployed',LAST_UPDATE_TIME_=? WHERE ID_=?", new Object[]{new Date(), modelid});
-                    jdbcTemplate.update("UPDATE ACT_RE_DEPLOYMENT SET NAME_=?  WHERE ID_=?", new Object[]{proName, deployid});
+                    jdbcTemplate.update("UPDATE ACT_RE_DEPLOYMENT SET NAME_=?  WHERE ID_=?", new Object[]{PreventXSS.delHTMLTag(proName), deployid});
                     repositoryService.setDeploymentCategory(deployid,proClassify);
                     jr.setResult("");
                     jr.setMsg("success");
@@ -491,7 +494,7 @@ public class CreateProcess {
                 Model model = repositoryService.createModelQuery().deploymentId(deployment.getId()).singleResult();
                 if(processDefinition!=null && model!=null){
                     map.put("DeploymentId",deployment.getId());
-                    map.put("DeploymentName",deployment.getName());
+                    map.put("DeploymentName",PreventXSS.delHTMLTag(deployment.getName()));
                     //map.put("DeploymentKey",processDefinition.getKey());
                     map.put("version",processDefinition.getVersion());
                     map.put("processDefinitionId",processDefinition.getId());
@@ -593,7 +596,7 @@ public class CreateProcess {
                     }else{
                         JSONObject json=new JSONObject(description);
                         map.put("id",processDefinition.getId());
-                        map.put("name",deployment.getName());
+                        map.put("name",PreventXSS.delHTMLTag(deployment.getName()));
                         map.put("cron",json.get("cron")==null?"":json.get("cron").toString());
                         map.put("nextTime",json.get("nextTime")==null?"":json.get("nextTime").toString());
                         map.put("state",json.get("state")==null?"":json.get("state").toString());
@@ -832,7 +835,7 @@ public class CreateProcess {
                         deploymentId(deployment.getId()).singleResult();
                 if(processDefinition!=null && processDefinition.getDescription()==null){
                     map.put("id",deployment.getId());
-                    map.put("name",deployment.getName());
+                    map.put("name",PreventXSS.delHTMLTag(deployment.getName()));
                     map.put("classify",deployment.getCategory());
                     list.add(map);
                 }

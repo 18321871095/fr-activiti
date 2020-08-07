@@ -540,12 +540,14 @@ public class processInfo {
     public JSONResult baocunAuthority(String procdefid,String name,String oldName) {
         JSONResult jr=new JSONResult();
         try {
+            String namedelHTMLTag = PreventXSS.delHTMLTag(name);
+            String oldNamedelHTMLTag = PreventXSS.delHTMLTag(oldName);
             List<IdentityLink> identityLinks= repositoryService.getIdentityLinksForProcessDefinition(procdefid);
             boolean flag=true;
-            if(name.equals(oldName)){
+            if(namedelHTMLTag.equals(oldNamedelHTMLTag)){
                 flag=true;
             }else{
-                List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT * FROM act_authority WHERE name=?", new Object[]{name});
+                List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT * FROM act_authority WHERE name=?", new Object[]{namedelHTMLTag});
                 if(list.size()>0){
                     flag=false;
                     jr.setMsg("002");
@@ -559,11 +561,11 @@ public class processInfo {
                     for (IdentityLink link : identityLinks) {
                         if (StringUtils.isNotBlank(link.getGroupId())) {
                             jdbcTemplate.update("INSERT INTO act_authority(procdefid, groupid, userid,name) VALUES (?,?,?,?)",
-                                    new Object[]{procdefid, link.getGroupId(), "",name});
+                                    new Object[]{procdefid, link.getGroupId(), "",namedelHTMLTag});
                         }
                         if (StringUtils.isNotBlank(link.getUserId())) {
                             jdbcTemplate.update("INSERT INTO act_authority(procdefid, groupid, userid,name) VALUES (?,?,?,?)",
-                                    new Object[]{procdefid, "", link.getUserId(),name});
+                                    new Object[]{procdefid, "", link.getUserId(),namedelHTMLTag});
                         }
                     }
                     jr.setMsg("success");
@@ -1075,8 +1077,8 @@ public class processInfo {
                     if(processDefinition.getDescription()==null && model!=null){
                         Map<String,Object> maps=new HashMap<String,Object>();
                         maps.put("depid",deployment.getId());
-                        maps.put("deName",ProcessUtils.getProName(deployment.getName()));
-                        maps.put("deNameParam",ProcessUtils.getProNameParam(deployment.getName()));
+                        maps.put("deName",ProcessUtils.getProName(PreventXSS.delHTMLTag(deployment.getName())));
+                        maps.put("deNameParam",ProcessUtils.getProNameParam(PreventXSS.delHTMLTag(deployment.getName())));
                         maps.put("processDefinitionID",processDefinition.getId());
                         List<Map<String, Object>> list1 = jdbcTemplate.queryForList("" +
                                 "SELECT * FROM classify WHERE id=?", new Object[]{deployment.getCategory()});
@@ -1180,9 +1182,9 @@ public class processInfo {
     public JSONResult guanlianproyuyewu(@RequestParam(value="file",required=false)
             MultipartFile file,String state,HttpServletRequest request){
 
-        String processDefinitionID=request.getParameter("processDefinitionID");
-        String commentinfo=request.getParameter("commentinfo");
-        String proname=request.getParameter("proname");
+        String processDefinitionID=PreventXSS.delHTMLTag(request.getParameter("processDefinitionID"));
+        String commentinfo=PreventXSS.delHTMLTag(request.getParameter("commentinfo"));
+        String proname=PreventXSS.delHTMLTag(request.getParameter("proname"));
         String requestid= request.getParameter("requestid");
         String reportName= request.getParameter("reportName");
         String taskid= request.getParameter("taskid");
@@ -1237,7 +1239,7 @@ public class processInfo {
             }
             //保存操作信息
             jdbcTemplate.update("INSERT INTO proopreateinfo(id,proInstanceId,taskid,opreateName,opreateRealName,opreateTime,opreateType,nodeName,mycomment,attachment,reportName,proname) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
-            new Object[]{ProcessUtils.getUUID(),processInstance.getId(),temp_taskid,username,userRealName,new Date(),1,temp_applicationNodeName,PreventXSS.delHTMLTag(commentinfo),attachmentid,taskEntity.getFormKey(),proname});
+            new Object[]{ProcessUtils.getUUID(),processInstance.getId(),temp_taskid,username,userRealName,new Date(),1,temp_applicationNodeName,commentinfo,attachmentid,taskEntity.getFormKey(),proname});
 
           ProcessInstance pro = runtimeService.createProcessInstanceQuery().processInstanceId(processInstance.getId()).singleResult();
             if(pro!=null){
@@ -1591,7 +1593,7 @@ public class processInfo {
                 HisMap.put("proEndTime", endTime);
                 HisMap.put("proCompleteState", completeState);
                 HisMap.put("prostate", process_state);
-                HisMap.put("proname", list.get(i).getName());
+                HisMap.put("proname", PreventXSS.delHTMLTag(list.get(i).getName()));
                 HisMap.put("userRealName",userRealName);
                 HisMap.put("currentAssignee",currentAssignee);
                 String applicationId=ProcessUtils.getApplicationActivitiId(list.get(i).getProcessDefinitionId(),
@@ -1687,7 +1689,7 @@ public class processInfo {
                 HisMap.put("proEndTime", endTime);
                 HisMap.put("proCompleteState", completeState);
                 HisMap.put("prostate", process_state);
-                HisMap.put("proname", list.get(i).getName());
+                HisMap.put("proname",PreventXSS.delHTMLTag( list.get(i).getName()));
                 HisMap.put("userRealName",userRealName);
                 HisMap.put("currentAssignee",currentAssignee);
                 String applicationId=ProcessUtils.getApplicationActivitiId(list.get(i).getProcessDefinitionId(),
@@ -1904,7 +1906,7 @@ public class processInfo {
                     }
 
                     map.put("businessKey", hisPro.getBusinessKey());
-                    map.put("proname", hisPro.getName());
+                    map.put("proname", PreventXSS.delHTMLTag(hisPro.getName()));
                     map.put("proStartTime", sdf.format(hisPro.getStartTime()));
                     map.put("proDefineID", hisPro.getProcessDefinitionId());
                     map.put("proInstanceId", hisPro.getId());
@@ -2131,7 +2133,7 @@ public class processInfo {
                     }
 
                     map.put("businessKey", hisPro.getBusinessKey());
-                    map.put("proname", hisPro.getName());
+                    map.put("proname", PreventXSS.delHTMLTag(hisPro.getName()));
                     map.put("proStartTime", sdf.format(hisPro.getStartTime()));
                     map.put("proDefineID", hisPro.getProcessDefinitionId());
                     map.put("proInstanceId", hisPro.getId());
@@ -2200,7 +2202,7 @@ public class processInfo {
                     map.put("taskId", t.getId());
                     map.put("taskName", t.getName());
                     map.put("proStartTime", sdf.format(hps.getStartTime()));
-                    map.put("proname", hps.getName());
+                    map.put("proname",PreventXSS.delHTMLTag( hps.getName()));
                     map.put("userName", hps.getStartUserId());
                     //获取发起人部门
                     List<String> deps = ProcessUtils.getDepsAndPostByUserName(hps.getStartUserId());
@@ -2273,7 +2275,7 @@ public class processInfo {
                 HistoricProcessInstance hps = historyService.createHistoricProcessInstanceQuery().
                         processInstanceId(t.getProcessInstanceId()).singleResult();
                 map.put("proStartTime", sdf.format(hps.getStartTime()));
-                map.put("proname", hps.getName());
+                map.put("proname", PreventXSS.delHTMLTag(hps.getName()));
                 map.put("userName", hps.getStartUserId());
                 //获取发起人部门
                 List<String> deps = ProcessUtils.getDepsAndPostByUserName(hps.getStartUserId());
@@ -2411,7 +2413,7 @@ public class processInfo {
                     attachmentid=ProcessUtils.uploadAttachment(request,file);
                 }
                 String sql="insert into proopreateinfo(id,opreateName,opreateRealName,opreateTime,opreateType,nodeName,mycomment,attachment,requestid,reportName,deployid,proname) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
-                update=jdbcTemplate.update(sql,new Object[]{ProcessUtils.getUUID(),userName,userRealName,new Date(),2,taskName,commentinfo,
+                update=jdbcTemplate.update(sql,new Object[]{ProcessUtils.getUUID(),userName,userRealName,new Date(),2,PreventXSS.delHTMLTag(taskName),PreventXSS.delHTMLTag(commentinfo),
                         attachmentid,requestid,reportName,deployid,proname});
                 if(update>0) {
                     jr.setMsg("success");
@@ -2483,15 +2485,15 @@ public class processInfo {
                         list1.get(i).get("deployid").toString()).singleResult();
                 if (processDefinition != null) {
                     Map<String, Object> map = new HashMap<>();
-                    map.put("proName", list1.get(i).get("proname") == null ? "" : list1.get(i).get("proname").toString());
+                    map.put("proName", PreventXSS.delHTMLTag(list1.get(i).get("proname") == null ? "" : list1.get(i).get("proname").toString()));
                     map.put("taskName", list1.get(i).get("nodeName") == null ? "" : list1.get(i).get("nodeName").toString());
                     map.put("opreateTime", list1.get(i).get("opreateTime") == null ? "" : sdf.format(list1.get(i).get("opreateTime")));
                     map.put("requestid", list1.get(i).get("requestid") == null ? "" : list1.get(i).get("requestid").toString());
                     map.put("reportName", list1.get(i).get("reportName") == null ? "" : list1.get(i).get("reportName").toString());
-                    map.put("proName", list1.get(i).get("proName") == null ? "" : list1.get(i).get("proName").toString());
+                    map.put("proName", PreventXSS.delHTMLTag(list1.get(i).get("proName") == null ? "" : list1.get(i).get("proName").toString()));
                     map.put("deployid", list1.get(i).get("deployid") == null ? "" : list1.get(i).get("deployid").toString());
                     map.put("proDefineId", processDefinition.getId());
-                    map.put("comment", list1.get(i).get("mycomment") == null ? "" : list1.get(i).get("mycomment").toString());
+                    map.put("comment", PreventXSS.delHTMLTag(PreventXSS.delHTMLTag(list1.get(i).get("mycomment") == null ? "" : list1.get(i).get("mycomment").toString())));
                     String s = list1.get(i).get("attachment") == null ? "" : list1.get(i).get("attachment").toString();
                     if("".equals(s)){
                         map.put("attachment","");
@@ -2579,7 +2581,7 @@ public class processInfo {
                     map.put("nodeName",opreateList.get(i).get("nodeName"));
                     map.put("opreateRealName", opreateList.get(i).get("opreateRealName"));
                     map.put("opreateType",  opreateList.get(i).get("opreateType"));
-                    map.put("comment", opreateList.get(i).get("mycomment"));
+                    map.put("comment", PreventXSS.delHTMLTag(opreateList.get(i).get("mycomment")+""));
                     map.put("opreateName", opreateList.get(i).get("opreateName"));
                     String attachmentid=opreateList.get(i).get("attachment")==null?"":opreateList.get(i).get("attachment").toString();
                     if("".equals(attachmentid)){

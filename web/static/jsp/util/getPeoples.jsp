@@ -5,12 +5,45 @@
 <html>
 <head>
     <style>
+    html,body{
+    font-family: 'Microsoft YaHei';
+    }
         .myli{
             cursor: pointer;
+            font-family: 'Microsoft YaHei';
+            line-height: 25px;
+                text-align: left;
+                white-space: nowrap;
+                position: relative;
+                margin: 0px 13px;
+                padding-left: 1.5em;
+                font-size: 14px;
+                color: #666666;
+                cursor: pointer;
+                -webkit-transition: all .3s ease-in 0s;
+                transition: all .3s ease-in 0s;
+                display:block;
         }
-        .myli:hover{
-            color: red;
+        .myli:hover, .myli:focus{
+             background-color: rgba(54, 133, 242, .06);
+                color: #3685f2;
+                -webkit-transition: all .3s ease-in 0s;
+                transition: all .3s ease-in 0s;
+                font-family: 'Microsoft YaHei';
         }
+        .bmList .myli{
+          color:#666;
+          /*padding-left:0!important;*/
+          font-family: 'Microsoft YaHei';
+        }
+         .bmList .myli:hover, .bmList .myli:focus{
+                  color:#3685f2!important;
+                 /* background:none!important;*/
+                  font-family: 'Microsoft YaHei';
+             background: url("${ctx}/static/images/tree_vertical_line_3.png") repeat-y;
+             background-position: -10px center;
+
+                }
         .clearfix::after {
             height: 0;
             display: block;
@@ -22,20 +55,88 @@
             width: 100%;
             border-bottom: 1px solid #f5f5f5;
             cursor: pointer;
+            padding: 5px 10px;
+            font-family: 'Microsoft YaHei';
+            box-sizing:border-box;
         }
-        .hdWrap a{ font-size: 14px; color: #333; padding: 0 10px; margin: 10px; }
+        .hdWrap a{ font-size: 14px; color: #333; padding: 5px 10px; margin: 10px; font-family: 'Microsoft YaHei';}
         .hdWrap a.active{
             color: #3296f5;
-            border-bottom: 2px solid #3296f5;
+            border-bottom: 2px solid #3296f5;font-family: 'Microsoft YaHei';
         }
         .headText{
             font-size: 14px;
             color: #333;
-            border-left: 4px solid #3269f5;
+            border-left: 4px solid #3296f5;
             padding-left: 0.5em;
-            margin: 10px;
-            box-sizing: border-box;
+            margin: 5px 10px;
+            box-sizing: border-box;font-family: 'Microsoft YaHei';
         }
+        .bmWrap::-webkit-scrollbar{
+          width:5px;
+          height:5px;
+          /**/
+        }
+        .bmWrap::-webkit-scrollbar-track{
+          background: rgb(239, 239, 239);
+          border-radius:10px;
+        }
+        .bmWrap::-webkit-scrollbar-thumb{
+          background: #bfbfbf;
+          border-radius:10px;
+        }
+        .bmWrap::-webkit-scrollbar-thumb:hover{
+          background: rgba(0,0,0,0.3);
+        }
+        .bmWrap::-webkit-scrollbar-corner{
+          background: #179a16;
+        }
+    /* .x-icon{
+      width: 25px; height: 25px;
+      !*background: url(images/tree_vertical_line_1.png) repeat-y;*!
+     float: left;
+      background: url("images/tree_vertical_line_3.png") repeat-y;
+  }*/
+    .bmWrap1::before {
+        background: url("${ctx}/static/images/tree_vertical_line_1.png") repeat-y;
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0px;
+        width: 20px;
+        height: 100%;
+    }
+    .bmWrap .myli{
+        /*position: absolute;
+        left: 10px;*/
+        /*float: left;*/
+        padding-left: 30px;
+        color: #333;
+        font-size: 14px;
+        margin-left: 0;
+        background: url("${ctx}/static/images/tree_vertical_line_3.png") repeat-y;
+        background-position: -10px center;
+    }
+    .bmWrap .myli:hover{
+        /*background: none!important;*/
+    }
+    .base-line-conn-background {
+
+
+    }
+    .addClass{
+        border: 1px solid #000;
+        cursor: pointer;
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        background-image: url("${ctx}/static/images/add.png");
+        background-size: cover;
+        position: relative;
+        left: 12px;
+        box-sizing: border-box;
+        z-index: 99999;
+    }
     </style>
 <%--    <link rel="stylesheet" href="${ctx}/static/css/xzblr.css"--%>
     <link rel="stylesheet" href="${ctx}/static/layui/css/layui.css">
@@ -50,13 +151,14 @@
         }
     %>
 </head>
+
 <body style="padding: 0px;margin: 0px">
 
 <%--<div style="display: inline-block" id="my" onclick="aa()" class="add"></div>
 <div style="display: inline-block" id="my1" onclick="aa()" class="jian"></div>--%>
 <div>
 <c:if test="${param.state=='1'||param.state=='2'||param.state=='3'}">
-    <div class="hdWrap">
+    <div class="hdWrap" >
         <a id="dep_a" class="active" onclick="showDiv(1,this)">部门-人员</a>
         <a id="role_a" onclick="showDiv(0,this)">角色-人员</a>
     </div>
@@ -71,8 +173,8 @@
 </c:if>
 </div>
 
-<div id="depDiv">
-    <div style="width: 38%;height: 90%;float: left;">
+<div id="depDiv" class="clearfix" style="border:1px solid #f5f5f5;box-sizing:border-box;">
+    <div class="bmList" style="width: 38%;height: 90%;float: left;box-sizing:border-box;">
        <div class="headText">
             部门
         </div>
@@ -86,7 +188,7 @@
                     </div>
                     <div style="width: 20%; float: left;">
                         <button class="layui-btn" onclick="selDep(this)"
-                                style="width: 100%; background: #3269f5;border-radius: 0 5px 5px 0;height: 30px;line-height: 30px;">
+                                style="width: 100%; background: #3296f5;border-radius: 0 5px 5px 0;height: 30px;line-height: 30px;">
                             <i class="layui-icon layui-icon-search"></i>
                         </button>
                     </div>
@@ -96,39 +198,37 @@
       <%--  <span style="font-size: 15px">部门：</span>
         <input id="selDepName" type="text" placeholder="搜索部门" /><button onclick="selDep(this)">搜索</button>
         <hr style="margin: 2px 0px">--%>
-
-        <div style="height: 75%;overflow-y: auto;">
+        <div class="bmWrap1 bmWrap" style="height: 75%;overflow-y: auto;position: relative;">
             <ul id="department" style="line-height: 25px;padding: 0px 10px;font-size: 15px;">
             </ul>
         </div>
 
     </div>
-    <div style="width: 27%;height: 90%;float: left;overflow-y:auto;">
+    <div class="bmWrap" style="width: 27%;height: 90%;float: left;overflow-y:auto;border-left:1px solid #f5f5f5;box-sizing:border-box;">
         <div class="headText">
             职位
         </div>
       <%--  <span style="font-size: 15px">职位：</span>
         <hr style="margin: 5px 0px">--%>
-        <div style="height: 85%;overflow-y: auto;">
+        <div class="bmWrap" style="height: 85%;overflow-y: auto;">
             <ul id="position" style="line-height: 25px;padding: 0px 10px;font-size: 15px">
             </ul>
         </div>
     </div>
-    <div style="width: 35%;height: 90%;float: left;">
+    <div style="width: 34%;height: 90%;float: left;border-left:1px solid #f5f5f5;box-sizing:border-box;">
         <div class="headText">
             人员
         </div>
         <%--<span style="font-size: 15px">人员：</span><hr style="margin: 5px 0px">--%>
-        <div style="height: 85%;overflow-y: auto;">
-            <ul id="user" style="line-height: 25px;padding: 0px 15px;font-size: 15px;list-style: none;">
-
+        <div class="bmWrap" style="height: 85%;overflow-y: auto;">
+            <ul id="user"  class="clearfix" style="line-height: 25px;padding: 0px 15px;font-size: 15px;list-style: none;">
             </ul>
         </div>
     </div>
 </div>
 
-<div id="roleDiv" style="display: none;">
-    <div style="float: left;">
+<div id="roleDiv" class="clearfix" style="display: none;border:1px solid #f5f5f5;box-sizing:border-box;">
+    <div class="bmList" style="float: left;box-sizing:border-box;">
         <div class="headText">
             角色
         </div>
@@ -143,7 +243,7 @@
                     </div>
                     <div style="width: 20%; float: left;">
                         <button class="layui-btn" onclick="selRole1(this)"
-                                style="width: 100%; background: #3269f5;border-radius: 0 5px 5px 0;height: 30px;line-height: 30px;">
+                                style="width: 100%; background: #3296f5;border-radius: 0 5px 5px 0;height: 30px;line-height: 30px;">
                             <i class="layui-icon layui-icon-search"></i>
                         </button>
                     </div>
@@ -152,17 +252,17 @@
         </div>
          <%--   <input id="role_name1" type="text" placeholder="搜索角色" /><button onclick="selRole1(this)">搜索</button>--%>
           <%--  <hr style="margin: 2px 0px">--%>
-        <div style="width: 38%;height: 65%;float: left;overflow-y:auto;width: 100%">
+        <div class="bmWrap1 bmWrap" style="width: 38%;height: 65%;float: left;overflow-y:auto;width: 100%;position: relative;">
             <ul id="role" style="line-height: 25px;padding: 0px 10px;font-size: 15px">
             </ul>
         </div>
     </div>
-    <div style="float: left;width: 69%;">
+    <div style="float: left;width: 68%;border-left:1px solid #f5f5f5;box-sizing:border-box;">
         <div class="headText">
             人员
         </div>
        <%-- <span style="font-size: 15px">人员：</span><hr style="margin: 5px 0px">--%>
-        <div style="width: 38%;height: 80%;float: left;overflow-y:auto;width: 100%">
+        <div class="bmWrap" style="width: 38%;height: 80%;float: left;overflow-y:auto;width: 100%">
             <ul id="role_user" style="line-height: 25px;padding: 0px 15px;font-size: 15px;list-style: none;">
             </ul>
         </div>
@@ -246,7 +346,7 @@
                         if(!data.data[i].isParent){
                             temp="<div onclick='getPosition(this)' id="+data.data[i].id+" class=\"myli\" style='display: inline-block;margin-left: 15px;'>"+data.data[i].text+"</div>";
                         }else {
-                            temp="<div name='add'  style='border: 1px solid #000;cursor: pointer;display: inline-block;width: 10px;height: 10px;background-image: url(\"${ctx}/static/images/add.png\");background-size: cover'></div>"
+                            temp="<div name='add'  class='addClass'></div>"
                                 +"<div onclick='getPosition(this)' id="+data.data[i].id+" class=\"myli\" style='display: inline-block;margin-left: 5px'>"+data.data[i].text+"</div>";
                         }
                         mythis.next().after("<ul style='list-style: none;margin-left: 15px;'><li>"+temp+"</li></ul>");
@@ -283,10 +383,10 @@
                     if(!data.data[i].isParent){
                         temp="<div onclick='getPosition(this)' id="+data.data[i].id+" class=\"myli\" style='display: inline-block;margin-left: 15px;'>"+data.data[i].text+"</div>";
                     }else {
-                        temp="<div name='add'  style='border: 1px solid #000;cursor: pointer;display: inline-block;width: 10px;height: 10px;background-image: url(\"${ctx}/static/images/add.png\");background-size: cover'></div>"
+                        temp="<div name='add' class='addClass' ></div>"
                             +"<div onclick='getPosition(this)' id="+data.data[i].id+" class=\"myli\" style='margin-left: 5px;display: inline-block'>"+data.data[i].text+"</div>";
                     }
-                    $("#department").append("<li >"+temp+"</li>");
+                    $("#department").append("<li class=\"clearfix\"> <div class=\"x-icon\"></div>"+temp+"</li>");
                 }
             },
             error:function (xhr,text) {
@@ -309,19 +409,19 @@
                     var temp="";
                    if(state==5){
                        if(checkRolesById(groupRoles,mydata[i].id)){
-                           $("#role").append("<div name="+mydata[i].id+" id="+mydata[i].text+"><input checked onclick='addQianZhanShiByRole(this)' " +
+                           $("#role").append("<div style='position: relative;left: 10px;' name="+mydata[i].id+" id="+mydata[i].text+"><input checked onclick='addQianZhanShiByRole(this)' " +
                                "type='checkbox' name="+mydata[i].id+" value="+mydata[i].text+" />" + mydata[i].text+"&nbsp;&nbsp;&nbsp;</div>");
                        }else{
-                           $("#role").append("<div name="+mydata[i].id+" id="+mydata[i].text+"><input onclick='addQianZhanShiByRole(this)' " +
+                           $("#role").append("<div style='position: relative;left: 10px;' name="+mydata[i].id+" id="+mydata[i].text+"><input onclick='addQianZhanShiByRole(this)' " +
                                "type='checkbox' name="+mydata[i].id+" value="+mydata[i].text+" />" + mydata[i].text+"&nbsp;&nbsp;&nbsp;</div>");
                        }
                    }else if(state==6)
                    {
                        if(checkRolesById(groupRolesByHuiQian,mydata[i].id)){
-                           $("#role").append("<div name="+mydata[i].id+" id="+mydata[i].text+"><input checked onclick='addHuiQianByRole(this)' " +
+                           $("#role").append("<div style='position: relative;left: 10px;' name="+mydata[i].id+" id="+mydata[i].text+"><input checked onclick='addHuiQianByRole(this)' " +
                                "type='checkbox' name="+mydata[i].id+" value="+mydata[i].text+" />" + mydata[i].text+"&nbsp;&nbsp;&nbsp;</div>");
                        }else{
-                           $("#role").append("<div name="+mydata[i].id+" id="+mydata[i].text+"><input onclick='addHuiQianByRole(this)' " +
+                           $("#role").append("<div style='position: relative;left: 10px;' name="+mydata[i].id+" id="+mydata[i].text+"><input onclick='addHuiQianByRole(this)' " +
                                "type='checkbox' name="+mydata[i].id+" value="+mydata[i].text+" />" + mydata[i].text+"&nbsp;&nbsp;&nbsp;</div>");
                        }
 
@@ -539,33 +639,48 @@
             success:function (data) {
                 var mydata=data.data.items;
                 $("#role_user").empty();
+                console.log(state)
                     if(state==1){
+                    if(mydata.length>0){
                         for(var i=0;i<mydata.length;i++) {
                             $("#role_user").append("<li onclick='addAssagin(this)' id="+mydata[i].username+" class=\"myli\">"
                                 +mydata[i].username+"   "+mydata[i].realName+"</li>");
                         }
                     }
+
+                        else{
+                                $("#role_user").append("<div style='width:250px;height:250px;margin: 0 auto;'>" +
+                                    "<img src='${ctx}/static/images/nouser.jpg' width='100%' height='100%'  /></div>");
+                            }
+
+                    }
                     else if(state==2){
                         var value = parent.document.getElementById("huiqian").value;
                         //会签
-                        $("#role_user").append("<li><input onchange='selAllHuiQian(this,1)' type='checkbox' />全选</li>");
-                        for(var i=0;i<mydata.length;i++) {
-                            if(value.indexOf(mydata[i].username)>-1){
-                                $("#role_user").append("<li id="+mydata[i].username+" class=\"myli\">"
-                                    +"<input onchange='addHuiQian(this)' value="+mydata[i].username+" type='checkbox' checked />"+mydata[i].username+"   "
-                                    +mydata[i].realName+"</li>");
-                            }else{
-                                $("#role_user").append("<li id="+mydata[i].username+" class=\"myli\">"
-                                    +"<input onchange='addHuiQian(this)' value="+mydata[i].username+" type='checkbox' />"+mydata[i].username+"   "
-                                    +mydata[i].realName+"</li>");
-                            }
+                       if(mydata.length>0){
+                           $("#role_user").append("<li><input onchange='selAllHuiQian(this,1)' type='checkbox' />全选</li>");
+                           for(var i=0;i<mydata.length;i++) {
+                               if(value.indexOf(mydata[i].username)>-1){
+                                   $("#role_user").append("<li id="+mydata[i].username+" class=\"myli\">"
+                                       +"<input onchange='addHuiQian(this)' value="+mydata[i].username+" type='checkbox' checked />"+mydata[i].username+"   "
+                                       +mydata[i].realName+"</li>");
+                               }else{
+                                   $("#role_user").append("<li id="+mydata[i].username+" class=\"myli\">"
+                                       +"<input onchange='addHuiQian(this)' value="+mydata[i].username+" type='checkbox' />"+mydata[i].username+"   "
+                                       +mydata[i].realName+"</li>");
+                               }
 
-                        }
+                           }
+                       }else{
+                           $("#role_user").append("<div style='width:250px;height:250px;margin: 0 auto;'>" +
+                               "<img src='${ctx}/static/images/nouser.jpg' width='100%' height='100%'  /></div>");
+                       }
                     }
                     else if(state==3){
                         var value = parent.document.getElementById("userField").value;
                         //组成员
-                        $("#role_user").append("<li><input onchange='selAllGroup(this,1)' type='checkbox' />全选</li>");
+                        if(mydata.length>0){
+                            $("#role_user").append("<li><input onchange='selAllGroup(this,1)' type='checkbox' />全选</li>");
 
                             for(var i=0;i<mydata.length;i++) {
                                 if(value.indexOf(mydata[i].username)>-1) {
@@ -579,18 +694,28 @@
                                         +mydata[i].realName+"</li>");
                                 }
                             }
+                        }else{
+                            $("#role_user").append("<div style='width:250px;height:250px;margin: 0 auto;'>" +
+                                "<img src='${ctx}/static/images/nouser.jpg' width='100%' height='100%'  /></div>");
+                        }
+
 
 
                     }
 
                     else if(state==4){
                         if(mydata.length==0){
-                            alert("该角色没有用户")
+                            $("#role_user").append("<div style='width:250px;height:250px;margin: 0 auto;'>" +
+                                "<img src='${ctx}/static/images/nouser.jpg' width='100%' height='100%'  /></div>");
                         }else{
                             console.log("角色用户："+mydata[0].username)
                             parent.document.getElementById("assigneeField").value = obj.innerHTML;
                             parent.document.getElementById("assigneTemp").value = mydata[0].username;
                             //parent.document.getElementById("assigneTemp1").value = mydata[0].username;
+                            for(var i=0;i<mydata.length;i++) {
+                                $("#role_user").append("<li  id="+mydata[i].username+" class=\"myli\">"
+                                    +mydata[i].username+"   "+mydata[i].realName+"</li>");
+                            }
                         }
 
                     }
@@ -763,8 +888,13 @@
                         temp["name"]=obj.value;
                         temp["user"]=getRolesInAssgine(mydata);
                         updateRoles(groupRoles,temp,1,group);
+                        for(var i=0;i<mydata.length;i++) {
+                            $("#role_user").empty().append("<li id="+mydata[i].username+" class=\"myli\">"
+                                +mydata[i].username+"   "+mydata[i].realName+"</li>");
+                        }
                     }else{
-                        alert("该角色下没有用户名，选择无效");
+                        $("#role_user").empty().append("<div style='width:250px;height:250px;margin: 0 auto;'>" +
+                            "<img src='${ctx}/static/images/nouser.jpg' width='100%' height='100%'  /></div>");
                         obj.checked=false;
                     }
                 },
@@ -802,8 +932,13 @@
                         temp["name"]=obj.value;
                         temp["user"]=getRolesInAssgine(mydata);
                         updateRolesByHuiQian(groupRolesByHuiQian,temp,1,group);
+                        for(var i=0;i<mydata.length;i++) {
+                            $("#role_user").empty().append("<li id="+mydata[i].username+" class=\"myli\">"
+                                +mydata[i].username+"   "+mydata[i].realName+"</li>");
+                        }
                     }else{
-                        alert("该角色下没有用户名，选择无效");
+                        $("#role_user").empty().append("<div style='width:250px;height:250px;margin: 0 auto;'>" +
+                            "<img src='${ctx}/static/images/nouser.jpg' width='100%' height='100%'  /></div>");
                         obj.checked=false;
                     }
                 },
@@ -945,16 +1080,30 @@
            }
         }
     }
+
     function selRole1(obj) {
         var name=$("#role_name1").val();
         $("#role").empty();
         for(var i=0;i<roleData.length;i++) {
             var aa=roleData[i].text;
             if(aa.indexOf(name)>-1){
-                var temp="";
-                temp="<div onclick='getRole_user(this)' id="+roleData[i].id+" class=\"myli\" " +
-                    "style='margin-left: 5px;display: inline-block'>"+roleData[i].text+"</div>";
-                $("#role").append("<li >"+temp+"</li>");
+                console.log(state)
+                //1  3  4
+               if(state=='1' || state=='2' ||  state=='3' || state=='4'){
+                   var temp="";
+                   temp="<div onclick='getRole_user(this)' id="+roleData[i].id+" class=\"myli\" " +
+                       "style='margin-left: 5px;display: inline-block'>"+roleData[i].text+"</div>";
+                   $("#role").append("<li >"+temp+"</li>");
+               }else if(state=='5'){
+                   $("#role").append("<div style='position: relative;left: 10px;' name="+roleData[i].id+" id="+roleData[i].text+">" +
+                   "<input  onclick='addQianZhanShiByRole(this)' " +
+                   "type='checkbox' name="+roleData[i].id+" value="+roleData[i].text+" />" + roleData[i].text+"&nbsp;&nbsp;&nbsp;</div>");
+               }else if( state=='6'){
+                   $("#role").append("<div style='position: relative;left: 10px;' name="+roleData[i].id+" id="+roleData[i].text+"><input onclick='addHuiQianByRole(this)' " +
+                       "type='checkbox' name="+roleData[i].id+" value="+roleData[i].text+" />" + roleData[i].text+"&nbsp;&nbsp;&nbsp;</div>");
+               }
+
+
             }
         }
     }
@@ -970,10 +1119,10 @@
                 if(!dep.data[i].isParent){
                     temp="<div onclick='getPosition(this)' id="+dep.data[i].id+" class=\"myli\" style='display: inline-block;margin-left: 15px;'>"+dep.data[i].text+"</div>";
                 }else {
-                    temp="<div name='add'  style='border: 1px solid #000;cursor: pointer;display: inline-block;width: 10px;height: 10px;background-image: url(\"${ctx}/static/images/add.png\");background-size: cover'></div>"
+                    temp="<div name='add'  class='addClass'  ></div>"
                         +"<div onclick='getPosition(this)' id="+dep.data[i].id+" class=\"myli\" style='margin-left: 5px;display: inline-block'>"+dep.data[i].text+"</div>";
                 }
-                $("#department").append("<li >"+temp+"</li>");
+                $("#department").append("<li class=\"clearfix\"> <div class=\"x-icon\"></div>"+temp+"</li>");
             }
         }
 
