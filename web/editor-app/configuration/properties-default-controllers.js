@@ -384,12 +384,38 @@ var KisBpmTextPropertyCtrl = [ '$scope', '$modal', function($scope, $modal) {
     $modal(opts);
 }];
 
-var KisBpmTextPropertyPopupCtrl = ['$scope', function($scope,$http) {
+var KisBpmTextPropertyPopupCtrl = ['$scope','$rootScope', function($scope,$rootScope) {
+   // console.log($rootScope)
+    //当前节点实时数据，在没有保存整个流程图之前
+    //console.log($scope.selectedShape.properties)
+    //var this_data=$scope.selectedShape.properties;
+    var data = $rootScope.modelData.model.childShapes;
+    var id = $scope.selectedShape.resourceId;
+    var temp_cpt;
+    if(data!=undefined){
+        for(var i=0;i<data.length;i++){
+            if(id==data[i].resourceId){
+                temp_cpt=data[i];
+                break;
+            }
+        }
+    }
 
+    if(temp_cpt.properties["cptType"]=='0'){
+        $scope.cptType='0';
+    }else{
+        $scope.cptType='1';
+    }
 
     $scope.save = function() {
+
+       if(temp_cpt!=undefined){
+           temp_cpt.properties["cptType"]=$scope.cptType;
+       }
+
         $scope.property.value= document.getElementById("selLayout").value;
         $scope.updatePropertyInModel($scope.property);
+
         $scope.close();
     };
     $scope.close = function() {
@@ -397,11 +423,18 @@ var KisBpmTextPropertyPopupCtrl = ['$scope', function($scope,$http) {
         $scope.$hide();
     };
 
-    $scope.yulan = function($scope){
+    $scope.yulan = function(){
         //console.log(window.document.location.href.split("/modeler")[0])
+      // var type="write";
+        if($scope.cptType=='1'){
+            type="write";
+        }else if($scope.cptType=='0'){
+            type="view";
+        }
        window.open(window.document.location.href.split("/modeler")[0]+"/decision/view/report?viewlet="+document.getElementById("selLayout").value
-           +"&op=write","_blank");
+           +"&op="+type,"_blank");
     };
+
 
 
 }];

@@ -15,8 +15,12 @@
  padding: 0 10px;
 }"/>
 				&nbsp;&nbsp;&nbsp;
-				<button ng-click="yulan()"
-	style="border:1px solid #3296f5;padding: 0 15px;line-height: 25px;background: #3296f5;color: #fff;border-radius: 5px;">预览模板</button>
+				<button ng-click="yulan()" style="border:1px solid #3296f5;padding: 0 15px;line-height: 25px;background: #3296f5;color: #fff;border-radius: 5px;">查看模板</button>
+				<div style="margin-top: 10px;"><!--ng-model="cptType"-->
+					类型： <input type="radio"  ng-model="cptType"   value="1" />&nbsp;&nbsp;填报
+					       <input type="radio"  ng-model="cptType"   value="0" />&nbsp;&nbsp;预览
+
+				</div>
 			</div>
 			<div class="modal-footer">
 				<button ng-click="save()" class="btn btn-primary" translate >ACTION.SAVE</button>

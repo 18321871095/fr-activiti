@@ -2584,17 +2584,18 @@ public class processInfo {
                     map.put("comment", PreventXSS.delHTMLTag(opreateList.get(i).get("mycomment")+""));
                     map.put("opreateName", opreateList.get(i).get("opreateName"));
                     String attachmentid=opreateList.get(i).get("attachment")==null?"":opreateList.get(i).get("attachment").toString();
+                    String id=opreateList.get(i).get("id")==null?"":opreateList.get(i).get("id").toString();
                     if("".equals(attachmentid)){
                         map.put("attachmentId","");
                         map.put("attachmentName", "");
                     }else {
-                        map.put("attachmentId",attachmentid);
+                       // map.put("attachmentId",attachmentid);
+                        map.put("attachmentId",id);
                         if(attachmentid.contains("\\")){
                             map.put("attachmentName",attachmentid.split("\\\\")[attachmentid.split("\\\\").length-1]);
                         }else{
                             map.put("attachmentName",attachmentid.split("/")[attachmentid.split("/").length-1]);
                         }
-
                     }
                     map.put("opreateTime", sdf.format(opreateList.get(i).get("opreateTime")));
                     map.put("proInstanceId",opreateList.get(i).get("proInstanceId"));
@@ -2762,39 +2763,60 @@ public class processInfo {
         FileInputStream in=null;
         File file=null;
         try {
-            out = response.getOutputStream();
-            String filePath = request.getSession().getServletContext().getRealPath("/").split(":")[0] + ":" + File.separator
-                    + "attachment" + File.separator;
-            String fileName = "";
-            if (path.contains("\\")) {
-                fileName = path.split("\\\\")[path.split("\\\\").length - 1];
-            } else {
-                fileName = path.split("/")[path.split("/").length - 1];
-            }
-            response.setContentType("text/html; charset=UTF-8"); //设置编码字符
-            response.setContentType("application/octet-stream");
-            response.setHeader("Content-disposition", "attachment;filename=" +
-                    URLEncoder.encode(fileName, "UTF-8"));
-             file=new File(path);
-             if(file.exists()){
-                 in = new FileInputStream(file.getAbsolutePath());
-             }else{
-                 file=new File(filePath + path);
-                 if(file.exists()){
-                     in = new FileInputStream(file.getAbsolutePath());
-                 }else{
-                     //文件不存在
-                     response.sendRedirect("/static/jsp/message.jsp?message="+URLEncoder.encode("文件不存在","utf-8"));
-                 }
-             }
-            //创建缓冲区
-            byte buffer[] = new byte[1024];
-            int len = 0;
-            //循环将输入流中的内容读取到缓冲区当中
-            while ((len = in.read(buffer)) > 0) {
-                //输出缓冲区的内容到浏览器，实现文件下载
-                out.write(buffer, 0, len);
-            }
+            List<Map<String, Object>> opreateList = jdbcTemplate.queryForList(
+                    "SELECT attachment FROM proopreateinfo WHERE id=?", new Object[]{path});
+           if(opreateList.size()>0){
+               Map<String, Object> map = opreateList.get(0);
+               String pathString=(String) map.get("attachment");
+               out = response.getOutputStream();
+               String system = System.getProperty("os.name");
+               String filePath="";
+               String winPath=request.getSession().getServletContext().getRealPath("/").split(":")[0] + ":" + File.separator
+                       + "attachment" + File.separator;
+               if(system.toLowerCase().startsWith("win")){
+                   filePath =winPath;
+               }else{
+                   filePath = File.separator+"attachment"+File.separator;
+               }
+               String fileName = "";
+               if (pathString.contains("\\")) {
+                   fileName = pathString.split("\\\\")[pathString.split("\\\\").length - 1];
+               } else {
+                   fileName = pathString.split("/")[pathString.split("/").length - 1];
+               }
+               response.setContentType("text/html; charset=UTF-8"); //设置编码字符
+               response.setContentType("application/octet-stream");
+               response.setHeader("Content-disposition", "attachment;filename=" +
+                       URLEncoder.encode(fileName, "UTF-8"));
+               file=new File(pathString);
+               if(file.exists()){
+                   in = new FileInputStream(file.getAbsolutePath());
+               }
+               else{
+                   file=new File(filePath + pathString);
+                   if(file.exists()){
+                       in = new FileInputStream(file.getAbsolutePath());
+                   }else{
+                       file=new File(winPath + pathString);
+                       if(file.exists()){
+                           in = new FileInputStream(file.getAbsolutePath());
+                       }else{
+                           //文件不存在
+                           response.sendRedirect("/static/jsp/message.jsp?message="+URLEncoder.encode("文件不存在","utf-8"));
+                       }
+                   }
+               }
+               //创建缓冲区
+               byte buffer[] = new byte[1024];
+               int len = 0;
+               //循环将输入流中的内容读取到缓冲区当中
+               while ((len = in.read(buffer)) > 0) {
+                   //输出缓冲区的内容到浏览器，实现文件下载
+                   out.write(buffer, 0, len);
+               }
+           }else{
+               response.sendRedirect("/static/jsp/message.jsp?message="+URLEncoder.encode("该文件路径查询为空","utf-8"));
+           }
         }catch (Exception e){
             response.sendRedirect("/static/jsp/message.jsp?message="+URLEncoder.encode(e.getMessage(),"utf-8"));
         }finally {

@@ -79,12 +79,15 @@ public class mytest {
 
             runtimeService.setVariable("50126","process_state","77");
             runtimeService.deleteProcessInstance("50126","adminganyu");*/
+String fileName="";
+          String pathString="6\\7\\98a3feda32a4e40dc69d20b671839b3.jpg";
+            if (pathString.contains("\\")) {
+                fileName = pathString.split("\\\\")[pathString.split("\\\\").length - 1];
+            } else {
+                fileName = pathString.split("/")[pathString.split("/").length - 1];
+            }
 
-          String a="123";
-            System.out.println(a.contains("1234"));
-
-
-
+            System.out.println(fileName);
 
         }
         catch (Exception e){

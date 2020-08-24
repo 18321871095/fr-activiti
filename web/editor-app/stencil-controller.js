@@ -685,7 +685,7 @@ angular.module('activitiModeler')
         /* Method available to all sub controllers (for property controllers) to update the internal Oryx model */
         $scope.updatePropertyInModel = function (property, shapeId) {
            // console.log($scope.selectedItem.properties)
-           // console.log($scope.selectedShape)
+            //console.log($scope.selectedShape)
             //$scope.selectedShape.properties.oryx-usertaskassignment.assignment.assignee
             //实现分配用户和会签联动只能指定其中一个
             if(property.key=='oryx-usertaskassignment'){
@@ -763,6 +763,14 @@ angular.module('activitiModeler')
                     $scope.selectedShape.properties["oryx-huiqianTemp"]=property.huiqianTemp;
                     console.log("huiqianType0")
                 }
+                //
+                if(property.cptType=='1'){
+                    $scope.selectedShape.properties["oryx-cptType"]="1";
+                }
+                if(property.cptType=='0'){
+                    $scope.selectedShape.properties["oryx-cptType"]="0";
+                }
+
                // console.log($scope.selectedShape.properties)
               // console.log($scope.selectedItem.properties)
             }

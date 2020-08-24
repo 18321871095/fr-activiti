@@ -384,6 +384,7 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
         console.log("得到的json")
         console.log(JSON.parse(json).childShapes)
 
+
     $scope.save = function (successCallback) {
         index = editorLayer.load(2, {offset: '200px'});
       try {
@@ -505,8 +506,11 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
                                  // message.push("节点名称：" + flowElement.properties.name + "的属性转换失败")
                                   //break;
                               }else{
+                                  //添加会签的
                                   flowElement.properties.huiqianTemp=temp_data.huiqianTemp;
                                   flowElement.properties.huiqianType=temp_data.huiqianType;
+                                  //添加cptType
+                                  flowElement.properties.cptType=temp_data.cptType;
                               }
                           }
 
@@ -518,7 +522,19 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
                       }*/
                       //单任务节点
                       else if (flowElement.properties.multiinstance_type == 'None') {
+                          //新增cptType
+                          if($rootScope.modelData.model.childShapes==undefined){
 
+                          }else{
+                              var temp_data =  get_rootScope_modelData_model_childShapes_properties(flowElement.resourceId,$rootScope.modelData.model.childShapes);
+                              if(temp_data==undefined){
+                                  // message.push("节点名称：" + flowElement.properties.name + "的属性转换失败")
+                                  //break;
+                              }else{
+                                  //添加cptType
+                                  flowElement.properties.cptType=temp_data.cptType;
+                              }
+                          }
 
                           flowElement.properties["multiinstance_collection"] = "";
                           flowElement.properties["multiinstance_variable"] = "";//${ads}
@@ -883,9 +899,40 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
                       })
                       .error(function (data, status, headers, config) {
                           editorLayer.close(index);
-                          $scope.error = {};
-                          console.log('保存流程图模型异常:' + JSON.stringify(data));
-                          $scope.status.loading = false;
+                          var message=JSON.stringify(data);
+                          if(message.indexOf("java.lang.VerifyError")>-1){
+                              $scope.editor.handleEvents({
+                                  type: ORYX.CONFIG.EVENT_SAVED
+                              });
+                              $scope.modelData.name = $scope.saveDialog.name;
+                              $scope.modelData.lastUpdated = data.lastUpdated;
+
+                              $scope.status.loading = false;
+                              $scope.$hide();
+
+                              // Fire event to all who is listening
+                              var saveEvent = {
+                                  type: KISBPM.eventBus.EVENT_TYPE_MODEL_SAVED,
+                                  model: params,
+                                  modelId: modelMetaData.modelId,
+                                  eventType: 'update-model'
+                              };
+                              KISBPM.eventBus.dispatch(KISBPM.eventBus.EVENT_TYPE_MODEL_SAVED, saveEvent);
+
+                              // Reset state
+                              $scope.error = undefined;
+                              $scope.status.loading = false;
+                              editorLayer.close(index);
+                              // Execute any callback
+                              if (successCallback) {
+                                  successCallback();
+                              }
+                          }else{
+                              $scope.error = {};
+                              console.log('保存流程图模型异常:' +message );
+                              $scope.status.loading = false;
+                          }
+
                       });
 
               }

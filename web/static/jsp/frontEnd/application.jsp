@@ -37,14 +37,14 @@
         </div>
     </div>
 </div>
-<div style="width: 120px;height: 50px;border: 1px solid #00a0e9;display: <%=register.equals("false")?"block":"none" %>;
-        position: fixed;right: 10px;bottom: 70px;background: #00a0e9;color: #fff;font-size: 15px;text-align: center;">
-    <div onclick="this.parentNode.style.display='none'" style="width: 20px;height: 20px; line-height: 20px; background: #999; box-sizing: border-box;border-radius: 50%; text-align: center;
-position: absolute; left: -10px; top: -10px; color: #fff;">
-        <a href="#" style="color: #fff; display: inline-block;">×</a>
-    </div>
-    试用阶段，剩余<%=time %>天！
-</div>
+        <div style="width: 120px;height: 50px;border: 1px solid #00a0e9;display: <%=register.equals("false")?"block":"none" %>;
+                position: fixed;right: 10px;bottom: 70px;background: #00a0e9;color: #fff;font-size: 15px;text-align: center;">
+            <div onclick="this.parentNode.style.display='none'" style="width: 20px;height: 20px; line-height: 20px; background: #999; box-sizing: border-box;border-radius: 50%; text-align: center;
+        position: absolute; left: -10px; top: -10px; color: #fff;">
+                <a href="#" style="color: #fff; display: inline-block;">×</a>
+            </div>
+            试用阶段，剩余<%=time %>天！
+        </div>
 </div>
 </body>
 <script src="${ctx}/static/js/jquery-2.1.1.min.js"></script>

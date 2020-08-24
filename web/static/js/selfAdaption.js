@@ -6,7 +6,7 @@ function setframeHeight(iframeId) {
     //由于在报表容器属性的设置只能在报表计算之后，所以用setTimeout来设置延迟执行时间，如果数据过多，请按照具体情况修改延迟时间
     setTimeout(function () {
         document.getElementById(''+iframeId).contentWindow.document.getElementById("content-container").style.overflow = "hidden";
-        document.getElementById(''+iframeId).contentWindow.document.getElementById("content-container").style.overflowX = "auto";
+        //document.getElementById(''+iframeId).contentWindow.document.getElementById("content-container").style.overflowX = "auto";
     }, 10)
     // 由于报表页面还存在页边距，因此框架高度是大于所有行累计的高度的，这里赋一个初始值以表示边距的大小
     var height = 400;var flag=false;

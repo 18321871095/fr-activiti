@@ -516,9 +516,26 @@ public class ProcessUtils {
             p.load(inputStream);
             String attachment = p.getProperty("attachment");
             String fileHashPath=ProcessUtils.getFileHashPath(file.getOriginalFilename());
+            /* windows：
+             System.out.println(request.getSession().getServletContext().getRealPath("/"));
+            E:\activiti\webroot-xiugai3-17\out\artifacts\webroot_war_exploded\
+              System.out.println(System.getProperty("os.name"));
+            Windows 10
+              System.out.println(filePath+fileHashPath);
+            E:\attachment\4\8
+            Linux：
+            /home/jh/project/apache-tomcat-8.5.20/webapps/webroot/
+            Linux
+            /home/jh/attachment1/2/6
+            * */
+            String system = System.getProperty("os.name");
             if(attachment==null){
-                filePath=request.getSession().getServletContext().getRealPath("/").
-                        split(":")[0]+":"+File.separator+"attachment"+File.separator;
+                if(system.toLowerCase().startsWith("win")){
+                    filePath=request.getSession().getServletContext().getRealPath("/").
+                            split(":")[0]+":"+File.separator+"attachment"+File.separator;
+                }else{
+                    filePath=File.separator+"attachment"+File.separator;
+                }
                 attachmentid=fileHashPath+File.separator+file.getOriginalFilename();
             }else{
                 filePath=attachment+File.separator;
@@ -527,6 +544,7 @@ public class ProcessUtils {
             ProcessUtils.judeDirExists(filePath+fileHashPath);
             file.transferTo(new File(filePath+fileHashPath+
                     File.separator+file.getOriginalFilename()));
+           // System.out.println(filePath+fileHashPath);
             return  attachmentid;
         }
         catch (Exception e){
@@ -542,8 +560,14 @@ public class ProcessUtils {
         String path =request.getSession().getServletContext().getRealPath("/")+"WEB-INF"+File.separator+"classes"+File.separator+"db.properties";
         //System.out.println(path);
         FileInputStream inputStream = new FileInputStream(path);
-        String s = request.getSession().getServletContext().getRealPath("/").split(":")[0] +
-                ":" + File.separator + "attachment" + File.separator;
+        String s="";
+        String system = System.getProperty("os.name");
+        if(system.toLowerCase().startsWith("win")) {
+             s = request.getSession().getServletContext().getRealPath("/").split(":")[0] +
+                    ":" + File.separator + "attachment" + File.separator;
+        }else{
+            s=File.separator+"attachment"+File.separator;
+        }
         try {
             //从输入流中读取属性列表（键和元素对）
             p.load(inputStream);
@@ -1233,6 +1257,106 @@ public class ProcessUtils {
 
         return  str.substring(str.indexOf("{")==-1?0:str.indexOf("{") + 1, str.indexOf("}")==-1?0:str.indexOf("}")).trim();
     }
+
+    /**
+     * 判断文件格式
+     * @param file
+     * @return
+     */
+    public static boolean checkFileFormat(MultipartFile file) {
+        if (file == null) {
+            return false;
+        }
+        try {
+            String type = ProcessUtils.getFileType(file.getInputStream());
+            if(FileType.TXT.getValue().equals(type)){//TXT,DOCX
+                return true;
+            }
+            if(FileType.XLS_DOC.getValue().equals(type)){//PPT,DOC,XLS
+                return true;
+            }
+            if(FileType.XLSX_DOCX.getValue().equals(type)){//XLSX
+                return true;
+            }
+            if(FileType.PDF.getValue().equals(type)){//PDF
+                return true;
+            }
+            if(FileType.PNG.getValue().equals(type)){//PNG
+                return true;
+            }
+            if(FileType.JPEG.getValue().equals(type)){//JPG
+                return true;
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
+    }
+    public static String getFileType(InputStream is) throws Exception{
+        FileType fileType = ProcessUtils.getType(is);
+        if(fileType!=null){
+            return fileType.getValue();
+        }
+        return null;
+    }
+
+
+    /**
+     * 获取文件类型类
+     * @param filePath 文件路径
+     * @return 文件类型
+     */
+    public static FileType getType(InputStream is) throws IOException {
+        String fileHead = ProcessUtils.getFileContent(is);
+        if (fileHead == null || fileHead.length() == 0) {
+            return null;
+        }
+        fileHead = fileHead.toUpperCase();
+        FileType[] fileTypes = FileType.values();
+        for (FileType type : fileTypes) {
+            if (fileHead.startsWith(type.getValue())) {
+                return type;
+            }
+        }
+        return null;
+    }
+    public static String getFileContent(InputStream is) throws IOException {
+        byte[] b = new byte[28];
+        InputStream inputStream = null;
+        try {
+            is.read(b, 0, 28);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw e;
+                }
+            }
+        }
+        return ProcessUtils.bytesToHexString(b);
+    }
+    public static String bytesToHexString(byte[] src) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (src == null || src.length <= 0) {
+            return null;
+        }
+        for (int i = 0; i < src.length; i++) {
+            int v = src[i] & 0xFF;
+            String hv = Integer.toHexString(v);
+            if (hv.length() < 2) {
+                stringBuilder.append(0);
+            }
+            stringBuilder.append(hv);
+        }
+        return stringBuilder.toString();
+    }
+
 
 
 

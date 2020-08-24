@@ -389,6 +389,20 @@ public class CreateProcess {
                         JSONObject assignment = childShapes.getJSONObject(i).getJSONObject("properties").getJSONObject("usertaskassignment")
                                 .getJSONObject("assignment");
                         JSONObject properties = childShapes.getJSONObject(i).getJSONObject("properties");
+
+                        //cpt formkeydefinition
+                        String cptType = properties.getString("cptType");
+                        String formkeydefinition = properties.getString("formkeydefinition");
+                       // System.out.println("cptType:"+cptType);
+                       // System.out.println("formkeydefinition:"+formkeydefinition);
+                        if("0".equals(cptType)){
+                            //预览
+                            properties.put("formkeydefinition",formkeydefinition+"&op=view");
+                        }else{
+                            //填报
+                            properties.put("formkeydefinition",formkeydefinition+"&op=write");
+                        }
+                        //办理人
                             String assigneType = assignment.getString("assigneType");
                             String assigneeValue = assignment.getString("assignee");
                             if("1".equals(assigneType) && !"".equals(assigneeValue)){
