@@ -763,18 +763,22 @@ angular.module('activitiModeler')
                     $scope.selectedShape.properties["oryx-huiqianTemp"]=property.huiqianTemp;
                     console.log("huiqianType0")
                 }
-                //
+
+               // console.log($scope.selectedShape.properties)
+              // console.log($scope.selectedItem.properties)
+            }
+            //触发是表单
+            else if(property.key=='oryx-formkeydefinition'){
+
                 if(property.cptType=='1'){
                     $scope.selectedShape.properties["oryx-cptType"]="1";
                 }
                 if(property.cptType=='0'){
                     $scope.selectedShape.properties["oryx-cptType"]="0";
                 }
-
-               // console.log($scope.selectedShape.properties)
-              // console.log($scope.selectedItem.properties)
             }
-
+            //console.log($scope.selectedItem.properties)
+            //console.log( $scope.selectedShape.properties)
 
             var shape = $scope.selectedShape;
             // Some updates may happen when selected shape is already changed, so when an additional

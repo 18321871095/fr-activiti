@@ -35,7 +35,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            border: 1px solid #efefef;
+            border: 1px solid #058bec;
         }
         input:checked + label {
             background-color: #3296f5;
@@ -198,6 +198,7 @@
         var propicInit=false;
         var iswritecomment="";
         var reportName="";
+        var cptURL="";
         $('.hd a').click(function(){
             $('.hd a').eq($(this).index()).addClass('active').siblings().removeClass('active');
             if($(this).index()===0){
@@ -228,7 +229,8 @@
                     if(data.msg==='success'){
                         iswritecomment=data.result.iswritecomment;
                         reportName=data.result.moban;
-                        var src= "${ctx}/decision/view/report?viewlet="+encodeURI(data.result.moban)+"&op=write&__cutpage__=v"+"&requestid="
+                        cptURL=data.result.moban;
+                        var src= "${ctx}/decision/view/report?viewlet="+encodeURI(data.result.moban)+"&__cutpage__=v"+"&requestid="
                             +data.result.yeuwuid+"&processInstanceId="+data.result.processInstanceId;
                         $("#BanLiTaskForm").empty().append("<iframe frameborder=\"0\" id=\"banlireportFrame\" src="+src+" width = 100% ></iframe>");
                         //报表自适应高度
@@ -268,59 +270,19 @@
                    if(getiswritecommentBanLiTask(iswritecomment)){
                        var banliTaskFlag=true;
                       if(banliTaskFlag){
-                          document.getElementById('banlireportFrame').contentWindow.contentPane._doVerify(
-                              function () {
-                              var index=banli_layer.load(2,{offset:'200px'});
-                              var seesionid=document.getElementById('banlireportFrame').contentWindow.contentPane.currentSessionID;
-                              var fileObj = document.getElementById("file").files[0]; // js 获取文件对象
-                              var form = new FormData();
-                              form.append("taskid",taskid);
-                              form.append("proname",proname);
-                              form.append("seesionid",seesionid);
-                              //判断是否有附件文件
-                              if(typeof (fileObj)!="undefined"){
-                                  form.append("file", fileObj);
-                              }
-                              form.append("commentinfo",$("#banlicomment").val());
-                              $.ajax({
-                                  type: "POST",
-                                  data:form,
-                                  dataType: "json",
-                                  processData:false,
-                                  contentType: false,
-                                  url: "${ctx}/processInfo/completeTask",
-                                  success: function (data) {
-                                      banli_layer.close(index);
-                                      if(data.msg==='success'){
-                                          document.getElementById('banlireportFrame').contentWindow.contentPane.writeReport();
-                                          banli_layer.confirm('提交成功', {
-                                              btn: ['确定'],
-                                              offset:'200px'
-                                          },function(){
-                                              var iframe=parent.window.document.getElementById("daibanTask_iframe");
-                                              if(typeof(iframe)!='undefined' && iframe!=null){
-                                                  iframe.contentWindow.daiban(1,true);
-                                              }
-                                              window.parent.FS.tabPane.closeActiveTab();
-                                          });
-                                      }else if(data.msg==='001'){
-                                          banli_layer.alert("分支条件都不成立，流程无法继续进行",{offset:'200px',icon:2});
-                                      }else if(data.msg==='002'){
-                                          banli_layer.alert("该任务已经不存在(可能流程设置了总时间),请刷新待办任务列表",{offset:'200px',icon:2});
-                                      }
-                                      else{
-                                          window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("提交流程错误："+data.result);
-                                      }
-                                  },
-                                  error: function (e, jqxhr, settings, exception) {
-                                      banli_layer.close(index);
-                                      alert('服务器响应失败!!!')
-                                  }
-                              });
-                          },function () {
-                             document.getElementById('banlireportFrame').contentWindow.contentPane.verifyReport();
-                              banli_layer.msg("模板数据校验不通过请检查",{offset:'200px'});
-                          });
+                          if(cptURL.indexOf("op=write")>-1){
+                              document.getElementById('banlireportFrame').contentWindow.contentPane._doVerify(
+                                  function () {
+                                      completeTask(taskid,proname,true);
+                                  },function () {
+                                      document.getElementById('banlireportFrame').contentWindow.contentPane.verifyReport();
+                                      banli_layer.msg("模板数据校验不通过请检查",{offset:'200px'});
+                                  });
+                          }else{
+                              //预览
+                              completeTask(taskid,proname,false);
+                          }
+
 
                       /*
                           document.getElementById('banlireportFrame').contentWindow.
@@ -336,38 +298,16 @@
 
             /*保存任务*/
             $(document).on("click","${'[name=\'baocunTask\']'}",function(){
-
-                document.getElementById('banlireportFrame').contentWindow.contentPane._doVerify(function () {
-                    var index=banli_layer.load(2,{offset:'200px'});
-                    $.ajax({
-                        type: "POST",
-                        dataType: "json",
-                        data:{userName:userName,userRealName:userRealName,taskid:taskid},
-                        url: "${ctx}/processInfo/banliBaoCun",
-                        success: function (data) {
-                            banli_layer.close(index);
-                            if(data.msg==='success'){
-                                document.getElementById('banlireportFrame').contentWindow.contentPane.writeReport();
-                                banli_layer.msg('保存成功',{offset:'200px'});
-                            }else if(data.msg==='001'){
-                                banli_layer.msg('任务不存在',{offset:'200px'});
-                            }else{
-                                window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("保存失败："+data.result);
-                            }
-
-                        },
-                        error: function (e, jqxhr, settings, exception) {
-                            banli_layer.close(index);
-                            alert('服务器响应失败!!!')
-                        }
+                if(cptURL.indexOf("op=write")>-1){
+                    document.getElementById('banlireportFrame').contentWindow.contentPane._doVerify(function () {
+                        reserveTask(taskid,true);
+                    },function () {
+                        document.getElementById('banlireportFrame').contentWindow.contentPane.verifyReport();
+                        banli_layer.msg("模板数据校验不通过请检查",{offset:'200px'});
                     });
-                },function () {
-                    document.getElementById('banlireportFrame').contentWindow.contentPane.verifyReport();
-                    banli_layer.msg("模板数据校验不通过请检查",{offset:'200px'});
-                });
-
-
-
+                }else{
+                    reserveTask(taskid,false);
+                }
                /* document.getElementById('banlireportFrame').contentWindow.contentPane.verifyAndWriteReport(true,undefined,function(){
 
                 },function () {});*/
@@ -447,7 +387,7 @@
                                         assign:getAssigns(),reportName:reportName},function(data){
                                         banli_layer.close(index);
                                         if(data.msg==='success') {
-                                            alert('退回成功');
+                                            banli_layer.alert('退回成功',{offset:'200px'});
                                             window.parent.FS.tabPane.closeActiveTab();
                                         }else if(data.msg==='fail'){
                                             window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("退回错误："+data.result);
@@ -581,6 +521,85 @@
 
         })
     });
+    //办理任务
+    function completeTask(taskid,proname,cpt_insert) {
+        var index=banli_layer.load(2,{offset:'200px'});
+        var seesionid=document.getElementById('banlireportFrame').contentWindow.contentPane.currentSessionID;
+        var fileObj = document.getElementById("file").files[0]; // js 获取文件对象
+        var form = new FormData();
+        form.append("taskid",taskid);
+        form.append("proname",proname);
+        form.append("seesionid",seesionid);
+        //判断是否有附件文件
+        if(typeof (fileObj)!="undefined"){
+            form.append("file", fileObj);
+        }
+        form.append("commentinfo",$("#banlicomment").val());
+        $.ajax({
+            type: "POST",
+            data:form,
+            dataType: "json",
+            processData:false,
+            contentType: false,
+            url: "${ctx}/processInfo/completeTask",
+            success: function (data) {
+                banli_layer.close(index);
+                if(data.msg==='success'){
+                    if(cpt_insert){
+                        document.getElementById('banlireportFrame').contentWindow.contentPane.writeReport();
+                    }
+                    banli_layer.confirm('提交成功', {
+                        btn: ['确定'],
+                        offset:'200px'
+                    },function(){
+                        var iframe=parent.window.document.getElementById("daibanTask_iframe");
+                        if(typeof(iframe)!='undefined' && iframe!=null){
+                            iframe.contentWindow.daiban(1,true);
+                        }
+                        window.parent.FS.tabPane.closeActiveTab();
+                    });
+                }else if(data.msg==='001'){
+                    banli_layer.alert("分支条件都不成立，流程无法继续进行",{offset:'200px',icon:2});
+                }else if(data.msg==='002'){
+                    banli_layer.alert("该任务已经不存在(可能流程设置了总时间),请刷新待办任务列表",{offset:'200px',icon:2});
+                }
+                else{
+                    window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("提交流程错误："+data.result);
+                }
+            },
+            error: function (e, jqxhr, settings, exception) {
+                banli_layer.close(index);
+                alert('服务器响应失败!!!')
+            }
+        });
+    }
+    //保存任务
+    function reserveTask(taskid,cpt_insert) {
+        var index=banli_layer.load(2,{offset:'200px'});
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            data:{taskid:taskid},
+            url: "${ctx}/processInfo/banliBaoCun",
+            success: function (data) {
+                banli_layer.close(index);
+                if(data.msg==='success'){
+                    if(cpt_insert){
+                        document.getElementById('banlireportFrame').contentWindow.contentPane.writeReport();
+                    }
+                    banli_layer.msg('保存成功',{offset:'200px'});
+                }else if(data.msg==='001'){
+                    banli_layer.msg('任务不存在',{offset:'200px'});
+                }else{
+                    window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("保存失败："+data.result);
+                }
+            },
+            error: function (e, jqxhr, settings, exception) {
+                banli_layer.close(index);
+                alert('服务器响应失败!!!')
+            }
+        });
+    }
 
     //第一次渲染流程图
     function baliTaskinintProPic(proDefinitionId,proInsID) {

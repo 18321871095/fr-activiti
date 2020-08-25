@@ -126,6 +126,7 @@ var KisBpmHuiQianPropertyPopupCtrl = ['$scope','$rootScope', function($scope,$ro
        temp_huiqin["properties"]={};*/
    }
 
+
     if($scope.property.value=='j**h'){
         $scope.property.value='';
         $scope.huiqianRadioType="0";
@@ -400,20 +401,39 @@ var KisBpmTextPropertyPopupCtrl = ['$scope','$rootScope', function($scope,$rootS
             }
         }
     }
-
-    if(temp_cpt.properties["cptType"]=='0'){
-        $scope.cptType='0';
+    console.log(temp_cpt)
+    if(temp_cpt!=undefined){
+        if(temp_cpt.properties.cptType==undefined || temp_cpt.properties.cptType==''|| temp_cpt.properties.cptType=='1'){
+            $scope.cptType="1";
+        }
+        if(temp_cpt.properties.cptType=='0'){
+            $scope.cptType="0";
+        }
     }else{
-        $scope.cptType='1';
+        if($scope.selectedShape.properties["oryx-cptType"]==undefined ||$scope.selectedShape.properties["oryx-cptType"]=='1' ){
+            $scope.cptType ='1';
+        }
+        if($scope.selectedShape.properties["oryx-cptType"]=='0'){
+            $scope.cptType="0";
+        }
     }
+
 
     $scope.save = function() {
 
-       if(temp_cpt!=undefined){
+      /* if(temp_cpt!=undefined){
            temp_cpt.properties["cptType"]=$scope.cptType;
-       }
+       }*/
+
+        if(temp_cpt!=undefined){
+            temp_cpt.properties["cptType"]=$scope.cptType;
+        }
+        else{
+            $scope.property["cptType"]=$scope.cptType;
+        }
 
         $scope.property.value= document.getElementById("selLayout").value;
+
         $scope.updatePropertyInModel($scope.property);
 
         $scope.close();

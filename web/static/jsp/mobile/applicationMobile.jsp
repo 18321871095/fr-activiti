@@ -64,7 +64,7 @@
         var processDefinitionID="${requestScope.processDefinitionID}";
 
         var requestid="${param.requestid}";
-        var reportName=decodeURI("${param.reportName}");
+        var reportName=decodeURI("${param.reportName}"+"&op="+"${param.op}");
         var flag="${param.state}";
         var taskName="${param.taskName}";
         var propicInit=false;
@@ -95,7 +95,7 @@
             processDefinitionID="${param.processDefinitionID}";
             var tijiaoName=decodeURI("${param.tijiaoName}")==''?'提交':decodeURI("${param.tijiaoName}");
             $("#mytijiao").text(tijiaoName);
-            var srcurl="${ctx}/decision/view/report?viewlet="+encodeURI(reportName)+"&op=write&__cutpage__=v"+"&requestid="+requestid;
+            var srcurl="${ctx}/decision/view/report?viewlet="+encodeURI(reportName)+"&__cutpage__=v"+"&requestid="+requestid;
 
             $("#item1").append("<iframe id=\"reportFrame\" frameborder=\"0\" src="+srcurl+" width = 100%   frameborder=\"0\"></iframe>");
             //报表自适应高度
@@ -124,7 +124,7 @@
 
                         var btnName=data.result.tijiaoName==''?'提交':data.result.tijiaoName;
                         $("#mytijiao_mobile").text(btnName);
-                        var srcurl="${ctx}/decision/view/report?viewlet="+encodeURI(reportName)+"&op=write&view=h5"+"&requestid="+requestid;
+                        var srcurl="${ctx}/decision/view/report?viewlet="+encodeURI(reportName)+"&view=h5"+"&requestid="+requestid;
 
                         $("#item1").append("<iframe id='reportFrame' src="+srcurl+" width = 100%   frameborder='0'></iframe>");
                         //报表自适应高度
@@ -159,110 +159,37 @@
         $(document).on("click","${'[name=\'submitFormInfo\']'}",function(){
             if(getiswritecomment(iswritecomment)){
                 if(true){
-                    alert(document.getElementById('reportFrame').contentWindow.contentPane)
-                    document.getElementById('reportFrame').contentWindow.contentPane._doVerify(
-                        function () {
-                            //校验成功
-                            var seesionid=document.getElementById('reportFrame').contentWindow.contentPane.currentSessionID;
-                            //流程名带参数
-                            var proNameParamVaule=document.getElementById('reportFrame').contentWindow.contentPane.curLGP.getCellValue(proNameParam.toUpperCase());
-                            var form = new FormData();
-                            // form.append("tiaojian",JSON.stringify(tiaojian_array));
-                            form.append("commentinfo",$("#commentinfo").val());
-                            form.append("proname",proname+proNameParamVaule);
-                            form.append("state",flag);
-                            form.append("requestid",requestid);
-                            form.append("reportName",reportName);
-                            form.append("processDefinitionID",processDefinitionID);
-                            form.append("taskid","");
-                            form.append("seesionid",seesionid);
-                            mui.showLoading("提交","div");
-                            $.ajax({
-                                type: "POST",
-                                data:form,
-                                dataType: "json",
-                                processData:false,
-                                contentType: false,
-                                url: "${ctx}/mobile/guanlianproyuyewu",
-                                success: function (data) {
-                                    mui.hideLoading();
-                                    if(data.msg==='success'){
-                                        //提交数据入库
-                                        document.getElementById('reportFrame').contentWindow.contentPane.writeReport();
-                                        mui.alert('提交成功',function(){
-                                            window.history.go(-1);
-                                           // window.parent.FS.tabPane.closeActiveTab();
-                                        });
-                                    }else if(data.msg==='001'){
-                                        mui.alert("分支条件都不成立，流程无法继续进行");
-                                    }
-                                    else{
-                                        window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("提交流程错误："+data.result);
-                                    }
-                                },
-                                error: function (e, jqxhr, settings, exception) {
-                                    mui.hideLoading();
-                                    alert('服务器响应失败!!!')
-                                }
-                            });
-                        },function () {
-                            document.getElementById('reportFrame').contentWindow.contentPane.verifyReport();
-                            mui.alert("模板数据校验不通过请检查");
-                        }
-                    );
+                    if(reportName.indexOf("op=write")>-1){
+                        document.getElementById('reportFrame').contentWindow.contentPane._doVerify(
+                            function () {
+                                submitFormInfoMobile(proNameParam,proname,flag,requestid,reportName,processDefinitionID,mui,true);
+                            },function () {
+                                document.getElementById('reportFrame').contentWindow.contentPane.verifyReport();
+                                mui.alert("模板数据校验不通过请检查");
+                            }
+                        );
+                    }else{
+                        submitFormInfoMobile(proNameParam,proname,flag,requestid,reportName,processDefinitionID,mui,false);
+                    }
                 }
             }else{
-                applicationBaoCun_layer.msg("请填写意见！！！",{offset:'200px'});
+                mui.alert("请填写意见！！！");
             }
         });
 
         /*保存申请信息*/
         $(document).on("click","${'[name=\'baocunFormInfo1\']'}",function(){
-            document.getElementById('reportFrame').contentWindow.contentPane._doVerify(function () {
-                mui.showLoading("保存","div");
-                var form_baocun = new FormData();
-                var proNameParamVaule=document.getElementById('reportFrame').contentWindow.contentPane.curLGP.getCellValue(proNameParam.toUpperCase());
-                form_baocun.append("processDefinitionID",processDefinitionID);
-                form_baocun.append("requestid",requestid);
-                form_baocun.append("reportName",reportName);
-                form_baocun.append("deployid",depid);
-                form_baocun.append("taskName",taskName);
-                form_baocun.append("proname",proname+proNameParamVaule);
-                form_baocun.append("userName","admin");
-                form_baocun.append("userRealName","admin");
-                form_baocun.append("commentinfo",$("#commentinfo").val());
-                $.ajax({
-                    type: "POST",
-                    data:form_baocun,
-                    dataType: "json",
-                    processData:false,
-                    contentType: false,
-                    url: "${ctx}/mobile/reserveProInfo",
-                    success: function (data) {
-                        mui.hideLoading();
-                        if(data.msg==='success'){
-                            document.getElementById('reportFrame').contentWindow.contentPane.writeReport();
-                            mui.alert('保存成功，可在待办中查看',"提示",function(){
+            if(reportName.indexOf("op=write")>-1){
+                document.getElementById('reportFrame').contentWindow.contentPane._doVerify(function () {
+                    baocunFormInfo1(proNameParam,proname,processDefinitionID,requestid,reportName,depid,taskName,mui,true);
+                },function () {
+                    document.getElementById('reportFrame').contentWindow.contentPane.verifyReport();
+                    mui.alert("模板数据校验不通过请检查");
+                });
+            }else{
+                baocunFormInfo1(proNameParam,proname,processDefinitionID,requestid,reportName,depid,taskName,mui,false);
+            }
 
-                               // window.parent.FS.tabPane.closeActiveTab();
-                                window.history.go(-1);
-                            });
-                        }else if(data.msg==='fail'){
-                             mui.alert(data.result)
-                        }
-                        else {
-                            window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("保存信息错误："+data.result);
-                        }
-                    },
-                    error: function (e, jqxhr, settings, exception) {
-                        mui.hideLoading();
-                        alert('服务器响应失败!!!')
-                    }
-                })
-            },function () {
-                document.getElementById('reportFrame').contentWindow.contentPane.verifyReport();
-                mui.alert("模板数据校验不通过请检查");
-            });
 
 
             /*   document.getElementById('reportFrame').contentWindow.contentPane.verifyAndWriteReport(true,undefined,function(){
@@ -271,6 +198,98 @@
 
         });
     });
+
+    function submitFormInfoMobile(proNameParam,proname,flag,requestid,reportName,processDefinitionID,mui,cpt_insert) {
+        //校验成功
+        var seesionid=document.getElementById('reportFrame').contentWindow.contentPane.currentSessionID;
+        //流程名带参数
+        var proNameParamVaule=document.getElementById('reportFrame').contentWindow.contentPane.curLGP.getCellValue(proNameParam.toUpperCase());
+        var form = new FormData();
+        // form.append("tiaojian",JSON.stringify(tiaojian_array));
+        form.append("commentinfo",$("#commentinfo").val());
+        form.append("proname",proname+proNameParamVaule);
+        form.append("state",flag);
+        form.append("requestid",requestid);
+        form.append("reportName",reportName);
+        form.append("processDefinitionID",processDefinitionID);
+        form.append("taskid","");
+        form.append("seesionid",seesionid);
+        mui.showLoading("提交","div");
+        $.ajax({
+            type: "POST",
+            data:form,
+            dataType: "json",
+            processData:false,
+            contentType: false,
+            url: "${ctx}/mobile/guanlianproyuyewu",
+            success: function (data) {
+                mui.hideLoading();
+                if(data.msg==='success'){
+                    //提交数据入库
+                    if(cpt_insert){
+                        document.getElementById('reportFrame').contentWindow.contentPane.writeReport();
+                    }
+                    mui.alert('提交成功',function(){
+                        window.history.go(-1);
+                        // window.parent.FS.tabPane.closeActiveTab();
+                    });
+                }else if(data.msg==='001'){
+                    mui.alert("分支条件都不成立，流程无法继续进行");
+                }
+                else{
+                    window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("提交流程错误："+data.result);
+                }
+            },
+            error: function (e, jqxhr, settings, exception) {
+                mui.hideLoading();
+                alert('服务器响应失败!!!')
+            }
+        });
+    }
+
+    function baocunFormInfo1(proNameParam,proname,processDefinitionID,requestid,reportName,depid,taskName,mui,cpt_insert) {
+        mui.showLoading("保存","div");
+        var form_baocun = new FormData();
+        var proNameParamVaule=document.getElementById('reportFrame').contentWindow.contentPane.curLGP.getCellValue(proNameParam.toUpperCase());
+        form_baocun.append("processDefinitionID",processDefinitionID);
+        form_baocun.append("requestid",requestid);
+        form_baocun.append("reportName",reportName);
+        form_baocun.append("deployid",depid);
+        form_baocun.append("taskName",taskName);
+        form_baocun.append("proname",proname+proNameParamVaule);
+        form_baocun.append("userName","admin");
+        form_baocun.append("userRealName","admin");
+        form_baocun.append("commentinfo",$("#commentinfo").val());
+        $.ajax({
+            type: "POST",
+            data:form_baocun,
+            dataType: "json",
+            processData:false,
+            contentType: false,
+            url: "${ctx}/mobile/reserveProInfo",
+            success: function (data) {
+                mui.hideLoading();
+                if(data.msg==='success'){
+                    if(cpt_insert){
+                        document.getElementById('reportFrame').contentWindow.contentPane.writeReport();
+                    }
+                    mui.alert('保存成功，可在待办中查看',"提示",function(){
+                        // window.parent.FS.tabPane.closeActiveTab();
+                        window.history.go(-1);
+                    });
+                }else if(data.msg==='fail'){
+                    mui.alert(data.result)
+                }
+                else {
+                    window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("保存信息错误："+data.result);
+                }
+            },
+            error: function (e, jqxhr, settings, exception) {
+                mui.hideLoading();
+                alert('服务器响应失败!!!')
+            }
+        })
+    }
 
     //第一次渲染流程图
     function inintProPic(processDefinitionID,depid) {

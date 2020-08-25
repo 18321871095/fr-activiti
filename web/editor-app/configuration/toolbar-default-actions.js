@@ -307,7 +307,7 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
             'description' : description};
     
     $scope.saveDialog = saveDialog;
-    
+
     var json = $scope.editor.getJSON();
     json = JSON.stringify(json);
 
@@ -379,7 +379,7 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
            // window.parent.FS.tabPane.addItem({title:"部署列表",src:"static/jsp/adminjsp/proDeployInfo.jsp"});
         });
     };
-        console.log("保存前")
+        console.log("保存前:初始化创建流程图页面就有的")
         console.log($rootScope.modelData.model.childShapes);
         console.log("得到的json")
         console.log(JSON.parse(json).childShapes)

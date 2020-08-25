@@ -260,47 +260,17 @@
             if(getiswritecommentBanLiTask(iswritecomment)){
                 var banliTaskFlag=true;
                 if(banliTaskFlag){
-                    document.getElementById('banlireportFrame').contentWindow.contentPane._doVerify(
-                        function () {
-                            mui.showLoading("提交中","div");
-                            var seesionid=document.getElementById('banlireportFrame').contentWindow.contentPane.currentSessionID;
-                            var form = new FormData();
-                            form.append("taskid",taskid);
-                            form.append("proname",proname);
-                            form.append("seesionid",seesionid);
-                            form.append("commentinfo",$("#banlicomment").val());
-                            $.ajax({
-                                type: "POST",
-                                data:form,
-                                dataType: "json",
-                                processData:false,
-                                contentType: false,
-                                url: "${ctx}/mobile/completeTask",
-                                success: function (data) {
-                                    mui.hideLoading();
-                                    if(data.msg==='success'){
-                                        document.getElementById('banlireportFrame').contentWindow.contentPane.writeReport();
-                                        mui.alert('提交成功',function(){
-                                            window.history.go(-1);
-                                        });
-                                    }else if(data.msg==='001'){
-                                        mui.alert("分支条件都不成立，流程无法继续进行");
-                                    }else if(data.msg==='002'){
-                                        mui.alert("该任务已经不存在(可能流程设置了总时间),请刷新待办任务列表");
-                                    }
-                                    else{
-                                        window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("提交流程错误："+data.result);
-                                    }
-                                },
-                                error: function (e, jqxhr, settings, exception) {
-                                    mui.hideLoading();
-                                    alert('服务器响应失败!!!')
-                                }
+                    if(reportName.indexOf("op=write")>-1){
+                        document.getElementById('banlireportFrame').contentWindow.contentPane._doVerify(
+                            function () {
+                                banliTaskTiJiaoMobile(taskid,proname,mui,true);
+                            },function () {
+                                document.getElementById('banlireportFrame').contentWindow.contentPane.verifyReport();
+                                mui.alert("模板数据校验不通过请检查");
                             });
-                        },function () {
-                            document.getElementById('banlireportFrame').contentWindow.contentPane.verifyReport();
-                            mui.alert("模板数据校验不通过请检查");
-                        });
+                    }else{
+                        banliTaskTiJiaoMobile(taskid,proname,mui,false);
+                    }
                 }
             }else{
                 mui.alert("请填写意见！！！");
@@ -311,34 +281,17 @@
 
         /*保存任务*/
         $(document).on("click","${'[name=\'baocunTask\']'}",function(){
-            document.getElementById('banlireportFrame').contentWindow.contentPane._doVerify(function () {
-                mui.showLoading("保存中","div");
-                $.ajax({
-                    type: "POST",
-                    dataType: "json",
-                    data:{userName:"Lily",userRealName:"孙红",taskid:taskid},
-                    url: "${ctx}/mobile/banliBaoCun",
-                    success: function (data) {
-                        mui.hideLoading();
-                        if(data.msg==='success'){
-                            document.getElementById('banlireportFrame').contentWindow.contentPane.writeReport();
-                            mui.alert('保存成功');
-                        }else if(data.msg==='001'){
-                            mui.alert('任务不存在');
-                        }else{
-                            window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("保存失败："+data.result);
-                        }
-
-                    },
-                    error: function (e, jqxhr, settings, exception) {
-                        mui.hideLoading();
-                        alert('服务器响应失败!!!')
-                    }
+            if(reportName.indexOf("op=write")>-1){
+                document.getElementById('banlireportFrame').contentWindow.contentPane._doVerify(function () {
+                    bancunTaskMobile(taskid,mui,true);
+                },function () {
+                    document.getElementById('banlireportFrame').contentWindow.contentPane.verifyReport();
+                    mui.alert("模板数据校验不通过请检查");
                 });
-            },function () {
-                document.getElementById('banlireportFrame').contentWindow.contentPane.verifyReport();
-                mui.alert("模板数据校验不通过请检查");
-            });
+            }else{
+                bancunTaskMobile(taskid,mui,false);
+            }
+
 
 
 
@@ -610,6 +563,74 @@
         })
 
     });
+
+    function banliTaskTiJiaoMobile(taskid,proname,mui,cpt_insert) {
+        mui.showLoading("提交中","div");
+        var seesionid=document.getElementById('banlireportFrame').contentWindow.contentPane.currentSessionID;
+        var form = new FormData();
+        form.append("taskid",taskid);
+        form.append("proname",proname);
+        form.append("seesionid",seesionid);
+        form.append("commentinfo",$("#banlicomment").val());
+        $.ajax({
+            type: "POST",
+            data:form,
+            dataType: "json",
+            processData:false,
+            contentType: false,
+            url: "${ctx}/mobile/completeTask",
+            success: function (data) {
+                mui.hideLoading();
+                if(data.msg==='success'){
+                    if(cpt_insert){
+                        document.getElementById('banlireportFrame').contentWindow.contentPane.writeReport();
+                    }
+                    mui.alert('提交成功',function(){
+                        window.history.go(-1);
+                    });
+                }else if(data.msg==='001'){
+                    mui.alert("分支条件都不成立，流程无法继续进行");
+                }else if(data.msg==='002'){
+                    mui.alert("该任务已经不存在(可能流程设置了总时间),请刷新待办任务列表");
+                }
+                else{
+                    window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("提交流程错误："+data.result);
+                }
+            },
+            error: function (e, jqxhr, settings, exception) {
+                mui.hideLoading();
+                alert('服务器响应失败!!!')
+            }
+        });
+    }
+
+    function bancunTaskMobile(taskid,mui,cpt_insert) {
+        mui.showLoading("保存中","div");
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            data:{taskid:taskid},
+            url: "${ctx}/mobile/banliBaoCun",
+            success: function (data) {
+                mui.hideLoading();
+                if(data.msg==='success'){
+                    if(cpt_insert){
+                        document.getElementById('banlireportFrame').contentWindow.contentPane.writeReport();
+                    }
+                    mui.alert('保存成功');
+                }else if(data.msg==='001'){
+                    mui.alert('任务不存在');
+                }else{
+                    window.location.href="${ctx}/static/jsp/message.jsp?message="+encodeURI("保存失败："+data.result);
+                }
+
+            },
+            error: function (e, jqxhr, settings, exception) {
+                mui.hideLoading();
+                alert('服务器响应失败!!!')
+            }
+        });
+    }
 
     //获取按钮
     function  getBtn(tijiao,istuihui,tuihui,huiqian,zhuanban) {
