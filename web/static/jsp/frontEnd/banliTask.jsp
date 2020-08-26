@@ -198,7 +198,6 @@
         var propicInit=false;
         var iswritecomment="";
         var reportName="";
-        var cptURL="";
         $('.hd a').click(function(){
             $('.hd a').eq($(this).index()).addClass('active').siblings().removeClass('active');
             if($(this).index()===0){
@@ -229,8 +228,11 @@
                     if(data.msg==='success'){
                         iswritecomment=data.result.iswritecomment;
                         reportName=data.result.moban;
-                        cptURL=data.result.moban;
-                        var src= "${ctx}/decision/view/report?viewlet="+encodeURI(data.result.moban)+"&__cutpage__=v"+"&requestid="
+
+                        if(reportName.indexOf("op=write")<0 && reportName.indexOf("op=view")<0){
+                            reportName+="&op=write";
+                        }
+                        var src= "${ctx}/decision/view/report?viewlet="+encodeURI(reportName)+"&__cutpage__=v"+"&requestid="
                             +data.result.yeuwuid+"&processInstanceId="+data.result.processInstanceId;
                         $("#BanLiTaskForm").empty().append("<iframe frameborder=\"0\" id=\"banlireportFrame\" src="+src+" width = 100% ></iframe>");
                         //报表自适应高度
@@ -270,7 +272,7 @@
                    if(getiswritecommentBanLiTask(iswritecomment)){
                        var banliTaskFlag=true;
                       if(banliTaskFlag){
-                          if(cptURL.indexOf("op=write")>-1){
+                          if(reportName.indexOf("op=write")>-1){
                               document.getElementById('banlireportFrame').contentWindow.contentPane._doVerify(
                                   function () {
                                       completeTask(taskid,proname,true);
@@ -298,7 +300,7 @@
 
             /*保存任务*/
             $(document).on("click","${'[name=\'baocunTask\']'}",function(){
-                if(cptURL.indexOf("op=write")>-1){
+                if(reportName.indexOf("op=write")>-1){
                     document.getElementById('banlireportFrame').contentWindow.contentPane._doVerify(function () {
                         reserveTask(taskid,true);
                     },function () {

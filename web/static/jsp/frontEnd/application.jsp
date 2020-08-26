@@ -89,6 +89,9 @@
                 processDefinitionID="${param.proDefineId}";
                 var tijiaoName=decodeURI("${param.tijiaoName}")==''?'提交':decodeURI("${param.tijiaoName}");
                 $("#mytijiao").text(tijiaoName);
+                if(reportName.indexOf("op=write")<0 && reportName.indexOf("op=view")<0){
+                    reportName+="&op=write";
+                }
                 var srcurl="${ctx}/decision/view/report?viewlet="+encodeURI(reportName)+"&__cutpage__=v"+"&requestid="+requestid;
                 $("#applicationForm").append("<iframe id=\"reportFrame\" frameborder=\"0\" src="+srcurl+" width = 100%   frameborder=\"0\"></iframe>");
                 //报表自适应高度
@@ -111,6 +114,9 @@
                         if(data.msg==='success'){
                             requestid=data.result.requestid;
                             reportName=data.result.reportName;
+                            if(reportName.indexOf("op=write")<0 && reportName.indexOf("op=view")<0){
+                                reportName+="&op=write";
+                            }
                             taskName=data.result.taskName;
                             iswritecomment=data.result.iswritecomment;
                             var btnName=data.result.tijiaoName==''?'提交':data.result.tijiaoName;

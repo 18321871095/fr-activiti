@@ -225,7 +225,10 @@
                 if(data.msg==='success'){
                     iswritecomment=data.result.iswritecomment;
                     reportName=data.result.moban;
-                    var src= "${ctx}/decision/view/report?viewlet="+encodeURI(data.result.moban)+"&op=write&__cutpage__=v"+"&requestid="
+                    if(reportName.indexOf("op=write")<0 && reportName.indexOf("op=view")<0){
+                        reportName+="&op=write";
+                    }
+                    var src= "${ctx}/decision/view/report?viewlet="+encodeURI(reportName)+"&op=write&__cutpage__=v"+"&requestid="
                         +data.result.yeuwuid+"&processInstanceId="+data.result.processInstanceId;
                     $("#BanLiTaskForm").empty().append("<iframe frameborder=\"0\" id=\"banlireportFrame\" src="+src+" width = 100% ></iframe>");
                     //报表自适应高度
