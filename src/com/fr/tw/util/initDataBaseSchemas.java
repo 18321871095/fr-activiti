@@ -274,6 +274,7 @@ public class initDataBaseSchemas implements InitializingBean, ServletContextAwar
                         scheduler.start();
                         json.put("state","1");
                         json.put("nextTime",nextTime);
+
                         jt.update("update act_re_procdef set DESCRIPTION_=? where ID_=?",new Object[]{json.toString(),
                                 p.getId()});
                     }

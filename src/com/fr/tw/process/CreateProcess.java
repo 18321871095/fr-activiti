@@ -634,7 +634,7 @@ public class CreateProcess {
      */
     @RequestMapping("/stopDingShi")
     @ResponseBody
-    public JSONResult stopDingShi(String id){
+    public JSONResult stopDingShi(String id,HttpServletRequest request){
         JSONResult jr=new JSONResult();
         try {
             if(!"".equals(id) && id!=null){
@@ -670,10 +670,11 @@ public class CreateProcess {
      */
     @RequestMapping("/startDingShi")
     @ResponseBody
-    public JSONResult startDingShi(String id,String proname){
+    public JSONResult startDingShi(String id,String proname,HttpServletRequest request){
         JSONResult jr=new JSONResult();
         List<Map<String,Object>> list=new ArrayList<>();
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
         try {
             if(!"".equals(id) && id!=null && !"".equals(proname) && proname!=null){
                 ProcessDefinition processDefinition =repositoryService.createProcessDefinitionQuery().processDefinitionId(id).singleResult();
@@ -691,13 +692,13 @@ public class CreateProcess {
                         .build();
                 CronTrigger cronTrigger = TriggerBuilder.newTrigger().withIdentity(id+"_cronTrigger").
                         withSchedule(CronScheduleBuilder.cronSchedule(cron)).build();
+
                 Date startTime = cronTrigger.getStartTime();
                 String nextTime=sdf.format(cronTrigger.getFireTimeAfter(startTime));
                 StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory();
                 Scheduler scheduler = stdSchedulerFactory.getScheduler();
                 scheduler.scheduleJob(jobDetail,cronTrigger);
                 scheduler.start();
-
                 json.put("state","1");
                 json.put("nextTime",nextTime);
                 jdbcTemplate.update("UPDATE ACT_RE_PROCDEF SET DESCRIPTION_=? WHERE ID_=?",new Object[]{json.toString(),
@@ -709,8 +710,13 @@ public class CreateProcess {
                 jr.setResult("参数流程实例id或流程名称为空");
             }
         }catch (Exception e){
-            jr.setMsg("fail");
-            jr.setResult("异常："+e.getMessage());
+            if(e instanceof ObjectAlreadyExistsException){
+                jr.setMsg("fail");
+                jr.setResult("该定时任务已经存在");
+            }else{
+                jr.setMsg("fail");
+                jr.setResult("异常："+e.getMessage());
+            }
         }
         return jr;
     }

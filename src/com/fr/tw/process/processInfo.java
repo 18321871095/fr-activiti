@@ -43,6 +43,9 @@ import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.task.*;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
+import org.quartz.*;
+import org.quartz.impl.JobDetailImpl;
+import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
@@ -705,11 +708,37 @@ public class processInfo {
     @RequestMapping(value = "/test1")
     @ResponseBody
     public String test1() throws Exception {
-        //[{jobTitle=部长, departments=人力资源}, {jobTitle=部长, departments=开发}]
-        UserService instance = UserService.getInstance();
-        User qweqwewqewqe = instance.getUserByUserName("Li12312321ly");
-       // System.out.println(qweqwewqewqe);
-        //System.out.println(qweqwewqewqe.getRealName());
+        StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory();
+        Scheduler scheduler = stdSchedulerFactory.getScheduler();
+        /*
+            * STATE_BLOCKED 4 阻塞
+            STATE_COMPLETE 2 完成
+            STATE_ERROR 3 错误
+            STATE_NONE -1 不存在
+            STATE_NORMAL 0 正常
+            STATE_PAUSED 1 暂停**
+        */
+
+
+
+        System.out.println(scheduler.checkExists(JobKey.jobKey("process:31:307507_cronJob")));
+       // System.out.println(scheduler.getTriggerState(trigger.getKey()));
+
+        List<JobExecutionContext> currentlyExecutingJobs = scheduler.getCurrentlyExecutingJobs();
+        for(JobExecutionContext jb:currentlyExecutingJobs){
+            System.out.println("==========================");
+            JobDetail jobDetail = jb.getJobDetail();
+            Trigger trigger = jb.getTrigger();
+            System.out.println(jobDetail.getKey());
+            System.out.println(trigger.getKey());
+            System.out.println(scheduler.checkExists(jobDetail.getKey()));
+            System.out.println(scheduler.getTriggerState(trigger.getKey()));
+        }
+
+     /*   System.out.println(scheduler.checkExists(jobDetail.getKey()));
+        System.out.println(jobDetail.getKey());
+        System.out.println(scheduler.getTriggerState(cronTrigger.getKey()));
+        System.out.println(cronTrigger.getKey());*/
         return "";
 
     }

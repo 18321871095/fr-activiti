@@ -79,15 +79,12 @@ public class mytest {
 
             runtimeService.setVariable("50126","process_state","77");
             runtimeService.deleteProcessInstance("50126","adminganyu");*/
-String fileName="";
-          String pathString="6\\7\\98a3feda32a4e40dc69d20b671839b3.jpg";
-            if (pathString.contains("\\")) {
-                fileName = pathString.split("\\\\")[pathString.split("\\\\").length - 1];
-            } else {
-                fileName = pathString.split("/")[pathString.split("/").length - 1];
-            }
+org.activiti.engine.impl.util.json.JSONObject json=new org.activiti.engine.impl.util.json.JSONObject("{\"cron\":\"0 0 0 * 8 ?\",\"nextTime\":\"2020-08-27 00:00:00\",\"state\":\"1\"}");
+           try{
+               Object cron1 = json.get("cron1");
+           }catch (Exception e){
 
-            System.out.println(fileName);
+           }
 
         }
         catch (Exception e){
