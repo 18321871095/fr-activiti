@@ -78,7 +78,8 @@ public class sendMessageJobUtil implements Job{
                         @Override
                         public void run() {
                             try {
-                                sendMessage.getSendMessageUser(taskService,task.getProcessInstanceId(),jdbcTemplate,proname,map,"2",list,processInstance.getProcessDefinitionId(),repositoryService);
+                                sendMessage.getSendMessageUser(taskService,task.getProcessInstanceId(),
+                                        jdbcTemplate,proname,map,"2",list,processInstance.getProcessDefinitionId(),repositoryService,"");
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

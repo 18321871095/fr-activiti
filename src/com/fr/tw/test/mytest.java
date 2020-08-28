@@ -79,11 +79,14 @@ public class mytest {
 
             runtimeService.setVariable("50126","process_state","77");
             runtimeService.deleteProcessInstance("50126","adminganyu");*/
-org.activiti.engine.impl.util.json.JSONObject json=new org.activiti.engine.impl.util.json.JSONObject("{\"cron\":\"0 0 0 * 8 ?\",\"nextTime\":\"2020-08-27 00:00:00\",\"state\":\"1\"}");
            try{
-               Object cron1 = json.get("cron1");
+               Integer a=500;
+               Integer b=499;
+               System.out.println(a==b);
+               System.out.println(a.equals(b));
+               System.out.println(a>b);
            }catch (Exception e){
-
+               System.out.println( e.getMessage());
            }
 
         }

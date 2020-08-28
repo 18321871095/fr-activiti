@@ -507,6 +507,9 @@ public class CreateProcess {
                         deploymentId(deployment.getId()).singleResult();
                 Model model = repositoryService.createModelQuery().deploymentId(deployment.getId()).singleResult();
                 if(processDefinition!=null && model!=null){
+                    String metaInfo = model.getMetaInfo();
+                    JSONObject jsonObject=new JSONObject(metaInfo);
+                    map.put("level",jsonObject.getString("level")==null ? "" : jsonObject.getString("level"));
                     map.put("DeploymentId",deployment.getId());
                     map.put("DeploymentName",PreventXSS.delHTMLTag(deployment.getName()));
                     //map.put("DeploymentKey",processDefinition.getKey());

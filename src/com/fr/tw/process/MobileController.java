@@ -292,10 +292,7 @@ public class MobileController {
             if(pro!=null){
                 //自动流传与第二次默认通过
                 Object proDueTime = runtimeService.getVariable(pro.getId(), "proDueTime");
-                if(!"parallel".equals(type) && !"sequential".equals(type)){
-                    ProcessUtils.autopass(taskService,processInstance.getId(),repositoryService,
-                            runtimeService,jdbcTemplate,username,historyService);
-                }
+
                 //发送消息
                 Map<String,String> para=new HashMap<>();
                 para.put("startPeople",userRealName);
@@ -303,11 +300,18 @@ public class MobileController {
 
                 para.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                 para.put("shenheTime",startTime);
+
+                if(!"parallel".equals(type) && !"sequential".equals(type)){
+                    ProcessUtils.autopass(taskService,processInstance.getId(),repositoryService,
+                            runtimeService,jdbcTemplate,username,historyService,para,proname);
+                }
+
                 ProcessUtils.fixedThreadPool.execute(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            sendMessage.getSendMessageUser(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",null,pro.getProcessDefinitionId(),repositoryService);
+                            sendMessage.getSendMessageUser(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",
+                                    null,pro.getProcessDefinitionId(),repositoryService,"");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -942,11 +946,7 @@ public class MobileController {
                 }else {
                     runtimeService.setVariable(proInstance.getId(),"process_state","1");
                     Object proDueTime = runtimeService.getVariable(proInstance.getId(), "proDueTime");
-                    //自动流传与第二次默认通过
-                    if(!"parallel".equals(type) && !"sequential".equals(type)){
-                        ProcessUtils.autopass(taskService,proInstance.getId(),repositoryService,
-                                runtimeService,jdbcTemplate,userName,historyService);
-                    }
+
                     //推送消息
                     Map<String,String> para=new HashMap<>();
                     HistoricProcessInstance proInstanceHis = historyService.createHistoricProcessInstanceQuery().
@@ -970,11 +970,19 @@ public class MobileController {
 
                     para.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                     para.put("shenheTime",sdf.format(new Date()));
+
+                    //自动流传与第二次默认通过
+                    if(!"parallel".equals(type) && !"sequential".equals(type)){
+                        ProcessUtils.autopass(taskService,proInstance.getId(),repositoryService,
+                                runtimeService,jdbcTemplate,userName,historyService,para,proname);
+                    }
+
                     ProcessUtils.fixedThreadPool.execute(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                sendMessage.getSendMessageUser(taskService,proInstanceId,jdbcTemplate,proname,para,"1",null,proInstanceHis.getProcessDefinitionId(),repositoryService);
+                                sendMessage.getSendMessageUser(taskService,proInstanceId,jdbcTemplate,proname,para,"1",
+                                        null,proInstanceHis.getProcessDefinitionId(),repositoryService,"");
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

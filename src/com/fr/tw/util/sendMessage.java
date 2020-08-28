@@ -24,7 +24,9 @@ import java.util.Map;
 public class sendMessage {
 
     public static void getSendMessageUser(TaskService taskService, String processInstanceId,
-     JdbcTemplate jdbcTemplate,String proname,Map<String,String> para,String state, List<Task> lists,String  processDefinitionID,RepositoryService repositoryService) throws Exception {
+     JdbcTemplate jdbcTemplate,String proname,Map<String,String> para,String state, List<Task> lists,String  processDefinitionID,RepositoryService repositoryService,String type) throws Exception {
+        //为了防止收到消息
+        Thread.sleep(3000);
         try {
             //发送消息
             String startPeople = para.get("startPeople") == null ? "" : para.get("startPeople").toString();
@@ -66,17 +68,26 @@ public class sendMessage {
 
             }
            List<String> assignes=new ArrayList<>();
+
             for (int i = 0; i < assigneeList.size(); i++) {
+                String msg="";
                 assignes.add(assigneeList.get(i).get("assignee"));
+
+
+                if("autopass".equals(type)){
+                    msg="，系统已为您自动通过无需办理。";
+                }else{
+                    msg="，请您尽快处理。";
+                }
                 if (!"".equals(proDueTime)) {
                     send(assigneeList.get(i).get("assignee"), proname + ":" + assigneeList.get(i).get("taskid"),
                             "您有一个的待处理任务，" + "流程名：" + proname + "，发起人：" + startPeople + "，发起日期：" + startTime
-                                    + "，截至日期：" + proDueTime + "，任务到达日期：" + shenheTime + "，请您尽快处理。", assigneeList.get(i).get("taskid"), URLEncoder.encode(proname, "utf-8"),
+                                    + "，截至日期：" + proDueTime + "，任务到达日期：" + shenheTime + msg, assigneeList.get(i).get("taskid"), URLEncoder.encode(proname, "utf-8"),
                             assigneeList.get(i).get("proDefinedId"), assigneeList.get(i).get("proInstanceId"));
                 } else {
                     send(assigneeList.get(i).get("assignee"), proname + ":" + assigneeList.get(i).get("taskid"),
                             "您有一个的待处理任务，" + "流程名：" + proname + "，发起人：" + startPeople + "，发起日期：" + startTime +
-                                    "，任务到达日期：" + shenheTime + "，请您尽快处理。", assigneeList.get(i).get("taskid"), URLEncoder.encode(proname, "utf-8"),
+                                    "，任务到达日期：" + shenheTime +msg, assigneeList.get(i).get("taskid"), URLEncoder.encode(proname, "utf-8"),
                             assigneeList.get(i).get("proDefinedId"), assigneeList.get(i).get("proInstanceId"));
                 }
                 jdbcTemplate.update("update act_ru_task set DESCRIPTION_='1' where ID_=?", new Object[]{assigneeList.get(i).get("taskid")});
@@ -89,7 +100,7 @@ public class sendMessage {
             if("true".equals(sendmessage) || "true".equals(sendemail)){
                 UserService user = UserService.getInstance();
                 for(String s:assignes){
-                    sendSmsAndEmail(s, proname, state, user, startPeople, startTime,sendmessage,sendemail);
+                    sendSmsAndEmail(s, proname, state, user, startPeople, startTime,sendmessage,sendemail,type);
                 }
             }
         }catch (Exception e){
@@ -112,7 +123,7 @@ public class sendMessage {
     }
 
     public  static void sendSmsAndEmail(String assign,String proname,String state,UserService user,
-                                        String startPeople,String startTime,String sendmessage,String sendemail) throws Exception {
+                                        String startPeople,String startTime,String sendmessage,String sendemail,String type) throws Exception {
         User userByUserName = user.getUserByUserName(assign);
         if(userByUserName!=null){
             if("true".equals(sendmessage)){
@@ -143,8 +154,14 @@ public class sendMessage {
                 if(userByUserName.getEmail()!=null || "".equals(userByUserName.getEmail())){
                     EmailBody.Builder email = EmailBody.newBuilder();
                     if("1".equals(state)){
+                        String msg="";
+                        if("autopass".equals(type)){
+                            msg="，系统已为您自动通过无需办理。";
+                        }else{
+                            msg="，请您尽快处理。";
+                        }
                         email.subject("任务待办提醒");
-                        email.bodyContent("您有个"+proname+"任务需要处理，请您尽快办理");
+                        email.bodyContent("您有个"+proname+"任务需要处理，"+msg);
                     }else{
                         email.subject("任务逾期提醒");
                         email.bodyContent("您有个"+proname+"任务即将过期，请您尽快办理");
@@ -181,7 +198,7 @@ public class sendMessage {
                 String sendmessage = ProcessUtils.getStartNodeExectionName(startEventObject, "sendmessage");
                 String sendemail = ProcessUtils.getStartNodeExectionName(startEventObject, "sendemail");
                 if("true".equals(sendmessage) || "true".equals(sendemail)){
-                    sendSmsAndEmail(task.getAssignee(),proname,"1",user,poeple,startTime,sendmessage,sendemail);
+                    sendSmsAndEmail(task.getAssignee(),proname,"1",user,poeple,startTime,sendmessage,sendemail,"");
                 }
             }
         }
@@ -208,7 +225,7 @@ public class sendMessage {
             String sendmessage = ProcessUtils.getStartNodeExectionName(startEventObject, "sendmessage");
             String sendemail = ProcessUtils.getStartNodeExectionName(startEventObject, "sendemail");
             if("true".equals(sendmessage) || "true".equals(sendemail)) {
-                sendSmsAndEmail(task.getAssignee(), proname, "1", user, poeple, startTime,sendmessage,sendemail);
+                sendSmsAndEmail(task.getAssignee(), proname, "1", user, poeple, startTime,sendmessage,sendemail,"");
             }
         }
         catch (Exception e){
@@ -236,7 +253,7 @@ public class sendMessage {
             String sendmessage = ProcessUtils.getStartNodeExectionName(startEventObject, "sendmessage");
             String sendemail = ProcessUtils.getStartNodeExectionName(startEventObject, "sendemail");
             if("true".equals(sendmessage) || "true".equals(sendemail)) {
-                sendSmsAndEmail(assignee, proname, "1", user, poeple, startTime,sendmessage,sendemail);
+                sendSmsAndEmail(assignee, proname, "1", user, poeple, startTime,sendmessage,sendemail,"");
             }
         }
         catch (Exception e){

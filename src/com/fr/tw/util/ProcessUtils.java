@@ -642,7 +642,8 @@ public class ProcessUtils {
 
     //判断流程自动流转与第二次默认通过
     public  static void autopass(TaskService taskService, String processInstanceId, RepositoryService repositoryService,
-      RuntimeService runtimeService,org.springframework.jdbc.core.JdbcTemplate jdbcTemplate, String userName,HistoryService historyService) throws Exception {
+      RuntimeService runtimeService,org.springframework.jdbc.core.JdbcTemplate jdbcTemplate,
+      String userName,HistoryService historyService,Map<String,String> para,String proname) throws Exception {
         List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
         for(Task t:list){
             UserTask userTask = getUserTask(t.getTaskDefinitionKey(), t.getProcessDefinitionId(), repositoryService);
@@ -670,6 +671,18 @@ public class ProcessUtils {
                     //这里有可能会有问题，帆软平台把该用户删除了
                     jdbcTemplate.update("insert into proopreateinfo(id,proInstanceId,taskid,opreateName,opreateRealName,opreateTime,opreateType,nodeName,mycomment,attachment) VALUES(?,?,?,?,?,?,?,?,?,?)",
                             new Object[]{ ProcessUtils.getUUID(),processInstanceId,taskid,Assignee,realName,new Date(),7,taskName,"",""});
+
+                    ProcessUtils.fixedThreadPool.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                sendMessage.getSendMessageUser(taskService,processInstanceId,jdbcTemplate,proname,para,"1",list,task.getProcessDefinitionId(),repositoryService,"autopass");
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
                 }
 
             }

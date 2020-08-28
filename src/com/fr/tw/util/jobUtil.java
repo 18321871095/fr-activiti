@@ -58,7 +58,8 @@ public class jobUtil implements Job{
             Object proDueTime = runtimeService.getVariable(processInstance.getId(), "proDueTime");
             para.put("proDueTime",proDueTime==null?"":proDueTime.toString());
             para.put("shenheTime",startTime);
-        sendMessage.getSendMessageUser(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",null,processInstance.getProcessDefinitionId(),repositoryService);
+        sendMessage.getSendMessageUser(taskService,processInstance.getId(),jdbcTemplate,proname,para,
+                "1",null,processInstance.getProcessDefinitionId(),repositoryService,"");
         JSONObject json=new JSONObject(processDefinition.getDescription());
         json.put("nextTime",sdf.format(jobExecutionContext.getNextFireTime()));
         jdbcTemplate.update("update act_re_procdef set DESCRIPTION_=? where ID_=?",new Object[]{json.toString(),

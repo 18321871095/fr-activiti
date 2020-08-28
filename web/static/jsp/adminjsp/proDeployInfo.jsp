@@ -64,6 +64,7 @@
                     <th>流程名称</th>
                   <%--  <th>流程版本号</th>--%>
                     <th>流程类别</th>
+                    <th>排序级别</th>
                     <th>部署时间</th>
                     <th>创建人</th>
                     <th>操作</th>
@@ -794,6 +795,9 @@ position: absolute; left: -10px; top: -10px; color: #fff;">
             });
 
 
+
+
+
             /*启动定时流程*/
             $(document).on("click","${'[name=\'start\']'}",function(){
                 var index=deploylayer.load(2,{offset:'46%'});
@@ -1298,7 +1302,6 @@ position: absolute; left: -10px; top: -10px; color: #fff;">
                         "<button name='daoruquanxian' style='color: #1E9FFF' class='mybtn'>导入权限</buttton> &nbsp;|&nbsp;"+
                         "<button name='shanchuDeploy' style='color: #FF5722' class='mybtn'>删除</buttton>&nbsp;|&nbsp; "+
                        "<button name='baocunquanxian' style='color: #FFB800' class='mybtn'>保存权限</button>";
-
                 }else{
                     btn="";
                 }
@@ -1307,6 +1310,7 @@ position: absolute; left: -10px; top: -10px; color: #fff;">
                     "<td>" + datas.result[i].DeploymentName + "</td>" +
                   /*  "<td>" + datas.result[i].version + "</td>" +*/
                     "<td>" + datas.result[i].DeploymentProclassify + "</td>"+
+                    "<td>" +datas.result[i].level + "</td>"+
                     "<td>"+ datas.result[i].DeploymentTime+"</td>" +
                     "<td>"+ datas.result[i].createPeople+"</td>" +
                     "<td>" + btn + "</td>"+

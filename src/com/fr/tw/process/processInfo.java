@@ -14,6 +14,7 @@ import com.fr.stable.script.Expression;
 import com.fr.tw.test.backtest;
 import com.fr.tw.test.task;
 import com.fr.tw.util.*;
+import com.fr.web.core.A.E;
 import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
 import org.activiti.bpmn.model.*;
 import org.activiti.engine.*;
@@ -529,6 +530,75 @@ public class processInfo {
             }else{
                 jr.setMsg("success");
                 jr.setResult((String)list.get(0).get("name"));
+            }
+        }catch (Exception e){
+            jr.setMsg("err");
+            jr.setResult(e.getMessage());
+        }
+        return  jr;
+    }
+
+    @RequestMapping(value = "/getLevel")
+    @ResponseBody
+    public JSONResult getLevel(String deployid) {
+        JSONResult jr=new JSONResult();
+        try{
+            Model model = repositoryService.createModelQuery().deploymentId(deployid).singleResult();
+            if(model!=null){
+                String metaInfo = model.getMetaInfo();
+                JSONObject json=new JSONObject(metaInfo);
+                String level=json.getString("level")==null ? "" : json.getString("level");
+                jr.setResult(level);
+                jr.setMsg("success");
+            }else{
+                jr.setResult("001");
+                jr.setMsg("001");
+            }
+
+        }catch (Exception e){
+            jr.setMsg("err");
+            jr.setResult(e.getMessage());
+        }
+        return  jr;
+    }
+
+    @RequestMapping(value = "/setLevel")
+    @ResponseBody
+    public JSONResult setLevel(String deployid,String level) {
+        JSONResult jr=new JSONResult();
+        try{
+            String str=level==null ? "" : level;
+            boolean flag=true;
+           if("".equals(str)){
+               flag=true;
+           }else{
+              try {
+                  if((str.matches("[0-9]+"))&&(Integer.parseInt(str)>0)) {
+                      //如果以上条件成立，则str是正整数，可以将str转为int类型，得到一个正整数n
+                      flag=true;
+                  }else{
+                      flag=false;
+                  }
+              }catch (Exception e){
+                  flag=false;
+              }
+           }
+            if(flag){
+                Model model = repositoryService.createModelQuery().deploymentId(deployid).singleResult();
+                String metaInfo = model.getMetaInfo();
+                JSONObject json=new JSONObject(metaInfo);
+                json.put("level",level);
+                int update = jdbcTemplate.update("UPDATE act_re_model set META_INFO_=? WHERE DEPLOYMENT_ID_=?", new Object[]{json.toString(), deployid});
+                if(update>0){
+                    jr.setResult("success");
+                    jr.setMsg("success");
+                }else{
+                    jr.setResult("001");
+                    jr.setMsg("001");
+                }
+            }else{
+                jr.setResult("002");
+                jr.setMsg("002");
             }
         }catch (Exception e){
             jr.setMsg("err");
@@ -1109,6 +1179,9 @@ public class processInfo {
                         maps.put("deName",ProcessUtils.getProName(PreventXSS.delHTMLTag(deployment.getName())));
                         maps.put("deNameParam",ProcessUtils.getProNameParam(PreventXSS.delHTMLTag(deployment.getName())));
                         maps.put("processDefinitionID",processDefinition.getId());
+                        String metaInfo = model.getMetaInfo();
+                        JSONObject jsonObject=new JSONObject(metaInfo);
+                        maps.put("level",jsonObject.getString("level")==null ? "" : jsonObject.getString("level"));
                         List<Map<String, Object>> list1 = jdbcTemplate.queryForList("" +
                                 "SELECT * FROM classify WHERE id=?", new Object[]{deployment.getCategory()});
                         String classfifyName="";
@@ -1128,7 +1201,8 @@ public class processInfo {
             for (List<Map<String,Object>> objectList:proclassifys) {
                 Map<String,Object> m=new HashMap<>();
                 m.put("proclassify",objectList.get(0).get("proclassify").toString());
-                m.put("proLists",objectList);
+                List<Map<String, Object>> list = MapValueOfClassify.levelAsc(objectList);
+                m.put("proLists",list);
                 dataList1.add(m);
             }
 
@@ -1274,10 +1348,6 @@ public class processInfo {
             if(pro!=null){
                 //自动流传与第二次默认通过
                 Object proDueTime = runtimeService.getVariable(pro.getId(), "proDueTime");
-                if(!"parallel".equals(type) && !"sequential".equals(type)){
-                    ProcessUtils.autopass(taskService,processInstance.getId(),repositoryService,
-                            runtimeService,jdbcTemplate,username,historyService);
-                }
                 //发送消息
                 Map<String,String> para=new HashMap<>();
                 para.put("startPeople",userRealName);
@@ -1286,11 +1356,17 @@ public class processInfo {
                 para.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                 para.put("shenheTime",startTime);
 
+                if(!"parallel".equals(type) && !"sequential".equals(type)){
+                    ProcessUtils.autopass(taskService,processInstance.getId(),repositoryService,
+                            runtimeService,jdbcTemplate,username,historyService,para,proname);
+                }
+
                 ProcessUtils.fixedThreadPool.execute(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            sendMessage.getSendMessageUser(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",null,processDefinitionID,repositoryService);
+                            sendMessage.getSendMessageUser(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",null,
+                                    processDefinitionID,repositoryService,"");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -1492,11 +1568,7 @@ public class processInfo {
               }else {
                   runtimeService.setVariable(proInstance.getId(),"process_state","1");
                   Object proDueTime = runtimeService.getVariable(proInstance.getId(), "proDueTime");
-                  //自动流传与第二次默认通过
-                  if(!"parallel".equals(type) && !"sequential".equals(type)){
-                      ProcessUtils.autopass(taskService,proInstance.getId(),repositoryService,
-                              runtimeService,jdbcTemplate,userName,historyService);
-                  }
+
                   //推送消息
                   Map<String,String> para=new HashMap<>();
                   HistoricProcessInstance proInstanceHis = historyService.createHistoricProcessInstanceQuery().
@@ -1520,11 +1592,20 @@ public class processInfo {
 
                   para.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                   para.put("shenheTime",sdf.format(new Date()));
+
+                  //自动流传与第二次默认通过
+                  if(!"parallel".equals(type) && !"sequential".equals(type)){
+                      ProcessUtils.autopass(taskService,proInstance.getId(),repositoryService,
+                              runtimeService,jdbcTemplate,userName,historyService,para,proname);
+                  }
+
                   ProcessUtils.fixedThreadPool.execute(new Runnable() {
                       @Override
                       public void run() {
                           try {
-                              sendMessage.getSendMessageUser(taskService,proInstanceId,jdbcTemplate,proname,para,"1",null,proInstance.getProcessDefinitionId(),repositoryService);
+                              para.put("type","");
+                              sendMessage.getSendMessageUser(taskService,proInstanceId,jdbcTemplate,proname,para,"1",null,
+                                      proInstance.getProcessDefinitionId(),repositoryService,"");
                           } catch (Exception e) {
                               e.printStackTrace();
                           }
@@ -2753,7 +2834,8 @@ public class processInfo {
                        @Override
                        public void run() {
                            try {
-                               sendMessage.getSendMessageUser(taskService,proinstanceId,jdbcTemplate,proname,para,"1",null,hisProInstance.getProcessDefinitionId(),repositoryService);
+                               sendMessage.getSendMessageUser(taskService,proinstanceId,jdbcTemplate,proname,para,"1",
+                                       null,hisProInstance.getProcessDefinitionId(),repositoryService,"");
                            } catch (Exception e) {
                                e.printStackTrace();
                            }
@@ -3083,7 +3165,8 @@ public class processInfo {
                             @Override
                             public void run() {
                                 try {
-                                    sendMessage.getSendMessageUser(taskService,proInid,jdbcTemplate,proname,para,"1",null,proInstanceHis.getProcessDefinitionId(),repositoryService);
+                                    sendMessage.getSendMessageUser(taskService,proInid,jdbcTemplate,proname,para,"1",
+                                            null,proInstanceHis.getProcessDefinitionId(),repositoryService,"");
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }

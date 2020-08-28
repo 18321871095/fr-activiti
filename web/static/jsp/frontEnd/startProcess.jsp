@@ -73,6 +73,7 @@ position: absolute; left: -10px; top: -10px; color: #fff;">
                     layer.close(index);
                     if(data.msg==='success'){
                         proData=data.result;
+                        console.log(proData)
                         $("#content").empty();
                         if(data.result.length>0){
                             for(var i=0;i<data.result.length;i++){
@@ -85,7 +86,7 @@ position: absolute; left: -10px; top: -10px; color: #fff;">
                                         "<input  type='hidden' value="+data.result[i].proLists[j].deName+" >"+
                                         "<input  type='hidden' value="+data.result[i].proLists[j].processDefinitionID+" >" +
                                         "<input  type='hidden' value="+data.result[i].proLists[j].deNameParam+" >" +
-                                        "</a></li>");
+                                        "</a><span name='setLevel' class='layui-icon layui-icon-set-fill'></span></li>");
                                 }
                             }
                         }else{
@@ -111,6 +112,62 @@ position: absolute; left: -10px; top: -10px; color: #fff;">
                 window.parent.FS.tabPane.addItem({title:name,src:"${ctx}/processInfo/authority?depid="+depid+"&proname="+
                 encodeURI(name)+"&processDefinitionID="+processDefinitionID+"&userName="+userName+"&proNameParam="+encodeURI(proNameParam)});
             });
+
+            $(document).on("click","${'[name=\'setLevel\']'}",function(){
+                var deployid=$(this).parent("li").find("input[type='hidden']").eq(0).val();
+                $.post("${ctx}/processInfo/getLevel",{deployid:deployid},function (data) {
+                    if(data.msg=='success'){
+                        var mydata=data.result;
+                        layer.open({
+                            title:'设置排序序号',
+                            type: 1,
+                            area:["350px","200px"],
+                            offset:"100px",
+                            content: '<div style="text-align: center;margin-top: 20px;">' +
+                            '<div style="margin-bottom: 10px;">说明：请输入大于0的整数(整值越小级别越高,可以为空)</div>'+
+                            '<input id="levelname" style="height: 30px; border: 1px solid #6666;" placeholder="请填写大于0的整数" oninput="this.value=this.value.replace(/\\D|^0/g,\'\')" /></div>'+
+                            '<div style="text-align: center;margin-top: 15px;"><button class="layui-btn" id='+deployid+'  name="quedinglevel">确定</button></div>'
+                            , success: function(layero, index){
+                                $("#levelname").val(mydata);
+                            }
+                        });
+                    }
+                    else if(data.msg=='001'){
+                        layer.alert("部署信息为空",{offset:'200px'});
+                    }
+
+                    else{
+                        window.location.href="${ctx}/static/jsp/error.jsp?message="+encodeURI(data.result);
+                    }
+                });
+            });
+
+
+
+            $(document).on("click","${'[name=\'quedinglevel\']'}",function(){
+                var mythis=$(this);
+                var quedinglevelindex=layer.load(1,{offset:'200px'});
+                $.post("${ctx}/processInfo/setLevel",{
+                    deployid:mythis.attr("id"),level:$("#levelname").val()
+                },function (data) {
+                    layer.close(quedinglevelindex);
+                    if(data.msg=='success'){
+                        layer.closeAll();
+                        layer.alert("设置成功,刷新当前页面可生效",{offset:'200px'});
+                    }else if(data.msg=='001'){
+                        layer.msg("设置失败",{offset:'200px'});
+                    }
+                    else if(data.msg=='002'){
+                        layer.alert("请输入正确的正整数",{offset:'200px'});
+                    }
+                    else {
+                        window.location.href="${ctx}/static/jsp/error.jsp?message="+encodeURI(data.result);
+                    }
+                });
+
+            });
+
+
 
             $("#searchPro").click(function () {
                 var name=$("#proName").val();

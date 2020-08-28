@@ -62,7 +62,8 @@ public class userTasksendMessageLisenter implements TaskListener  {
                     @Override
                     public void run() {
                         try {
-                            sendMessage.getSendMessageUser(taskService,delegateTask.getProcessInstanceId(),jdbcTemplate,proname,map,"1",null,his.getProcessDefinitionId(),repositoryService);
+                            sendMessage.getSendMessageUser(taskService,delegateTask.getProcessInstanceId(),jdbcTemplate,proname,map,
+                                    "1",null,his.getProcessDefinitionId(),repositoryService,"");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
