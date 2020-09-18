@@ -577,8 +577,8 @@ position: absolute; left: -10px; top: -10px; color: #fff;">
             $(document).on("click","${'[name=\'xiugai\']'}",function(){
                 var modelid=$(this).parents("tr").find("td").eq(0).text();//
                 var myid=$(this).parents("tr").find("input[type='hidden']").eq(0).val();
-                window.location.href="${ctx}/modeler.html?modelId="+modelid+"&modelerStatus=true&param="+myid;
-               // window.parent.FS.tabPane.addItem({title:"流程图修改"+modelid, src:"${ctx}/modeler.html?modelId="+modelid});
+                //window.location.href="${ctx}/modeler.html?modelId="+modelid+"&modelerStatus=true&param="+myid;
+               window.parent.FS.tabPane.addItem({title:"流程图修改"+modelid, src:"${ctx}/modeler.html?modelId="+modelid+"&modelerStatus=true&param="+myid});
             });
 
             $(document).on("click","${'[name=\'chakan\']'}",function(){

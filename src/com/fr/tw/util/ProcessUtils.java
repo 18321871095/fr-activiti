@@ -5,7 +5,13 @@ import com.fr.decision.authority.data.User;
 import com.fr.decision.webservice.bean.user.UserDetailInfoBean;
 import com.fr.decision.webservice.v10.login.LoginService;
 import com.fr.decision.webservice.v10.user.UserService;
+import com.fr.main.TemplateWorkBook;
+import com.fr.main.workbook.WriteWorkBook;
+import com.fr.report.write.SubmitHelper;
 import com.fr.stable.script.CalculatorProvider;
+import com.fr.web.core.ReportSessionIDInfor;
+import com.fr.web.core.ReportWebUtils;
+import com.fr.web.core.SessionPoolManager;
 import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Process;
 import org.activiti.engine.HistoryService;
@@ -36,6 +42,7 @@ import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.SimpleTrigger;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -641,9 +648,10 @@ public class ProcessUtils {
     }*/
 
     //判断流程自动流转与第二次默认通过
-    public  static void autopass(TaskService taskService, String processInstanceId, RepositoryService repositoryService,
+    public  static Map<String,Object> autopass(TaskService taskService, String processInstanceId, RepositoryService repositoryService,
       RuntimeService runtimeService,org.springframework.jdbc.core.JdbcTemplate jdbcTemplate,
-      String userName,HistoryService historyService,Map<String,String> para,String proname) throws Exception {
+     HistoryService historyService) throws Exception {
+        Map<String,Object> resultMap=new HashMap<>();
         List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
         for(Task t:list){
             UserTask userTask = getUserTask(t.getTaskDefinitionKey(), t.getProcessDefinitionId(), repositoryService);
@@ -671,8 +679,10 @@ public class ProcessUtils {
                     //这里有可能会有问题，帆软平台把该用户删除了
                     jdbcTemplate.update("insert into proopreateinfo(id,proInstanceId,taskid,opreateName,opreateRealName,opreateTime,opreateType,nodeName,mycomment,attachment) VALUES(?,?,?,?,?,?,?,?,?,?)",
                             new Object[]{ ProcessUtils.getUUID(),processInstanceId,taskid,Assignee,realName,new Date(),7,taskName,"",""});
+                    resultMap.put("state","autopass");
+                    resultMap.put("data",list);
 
-                    ProcessUtils.fixedThreadPool.execute(new Runnable() {
+                   /* ProcessUtils.fixedThreadPool.execute(new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -681,7 +691,7 @@ public class ProcessUtils {
                                 e.printStackTrace();
                             }
                         }
-                    });
+                    });*/
 
                 }
 
@@ -714,11 +724,14 @@ public class ProcessUtils {
                         //这里有可能会有问题，帆软平台把该用户删除了
                         jdbcTemplate.update("insert into proopreateinfo(id,proInstanceId,taskid,opreateName,opreateRealName,opreateTime,opreateType,nodeName,mycomment,attachment) VALUES(?,?,?,?,?,?,?,?,?,?)",
                                 new Object[]{ ProcessUtils.getUUID(),processInstanceId,taskid,Assignee,realName,new Date(),7,taskName,"",""});
+                        resultMap.put("state","seccondautobypass");
+                        resultMap.put("data",list);
                     }
 
                 }
             }
         }
+        return  resultMap;
     }
 
 
@@ -1114,6 +1127,46 @@ public class ProcessUtils {
         }
     }
 
+    //后台提交模板数据
+    public static String submitCpt(String sessionID){
+        String result="";
+        try {
+            if(!"".equals(sessionID) && sessionID!=null){
+                ReportSessionIDInfor sessionIDInfor3 = SessionPoolManager.getSessionIDInfor(sessionID, ReportSessionIDInfor.class);
+                if (sessionIDInfor3 != null) {
+                    TemplateWorkBook templateBook = sessionIDInfor3.getWorkBookDefine();
+                    Map<String, Object> map = ReportWebUtils.dealWithReportParameters(sessionIDInfor3.getWorkBookDefine(), sessionIDInfor3.getParameterMap4Execute());
+                    SubmitHelper.submit((WriteWorkBook) sessionIDInfor3.getWorkBook2Show(), templateBook, map);
+                    return  "success";
+                } else {
+                   return "sessionIDInfo对象为null";
+                }
+            }else{
+                return "sessionID为空";
+            }
+        }
+        catch (Exception e){
+            return e.getMessage()+"";
+        }
+    }
+
+    //发送短信
+    public static void sendMessage(TaskService taskService, String processInstanceId, JdbcTemplate jdbcTemplate,String proname,Map<String,String> para,String state,
+                                   List<Task> lists,String processDefinitionID,RepositoryService repositoryService,String type){
+        ProcessUtils.fixedThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    sendMessage.getSendMessageUser(taskService,processInstanceId,jdbcTemplate,proname,para,state,lists,
+                            processDefinitionID,repositoryService,type);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+
 
 
 
@@ -1317,7 +1370,7 @@ public class ProcessUtils {
 
     /**
      * 获取文件类型类
-     * @param filePath 文件路径
+     * @param // filePath 文件路径
      * @return 文件类型
      */
     public static FileType getType(InputStream is) throws IOException {

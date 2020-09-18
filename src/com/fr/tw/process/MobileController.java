@@ -240,6 +240,7 @@ public class MobileController {
         String reportName= request.getParameter("reportName");
         String taskid= request.getParameter("taskid");
         String seesionid= request.getParameter("seesionid");
+        String cpt= request.getParameter("cpt");
         String attachmentid="";
         String startTime="";
         String type="";
@@ -289,12 +290,14 @@ public class MobileController {
                     new Object[]{ProcessUtils.getUUID(),processInstance.getId(),temp_taskid,username,userRealName,new Date(),1,temp_applicationNodeName, commentinfo,attachmentid,taskEntity.getFormKey(),proname});
 
             ProcessInstance pro = runtimeService.createProcessInstanceQuery().processInstanceId(processInstance.getId()).singleResult();
+            boolean autopassSendMessageFlag=true;
+            List<Task> listTemp=null;
+            Map<String,String> para=new HashMap<>();
             if(pro!=null){
                 //自动流传与第二次默认通过
                 Object proDueTime = runtimeService.getVariable(pro.getId(), "proDueTime");
 
                 //发送消息
-                Map<String,String> para=new HashMap<>();
                 para.put("startPeople",userRealName);
                 para.put("startTime",startTime);
 
@@ -302,11 +305,18 @@ public class MobileController {
                 para.put("shenheTime",startTime);
 
                 if(!"parallel".equals(type) && !"sequential".equals(type)){
-                    ProcessUtils.autopass(taskService,processInstance.getId(),repositoryService,
-                            runtimeService,jdbcTemplate,username,historyService,para,proname);
+                    Map<String, Object> mm = ProcessUtils.autopass(taskService, processInstance.getId(), repositoryService, runtimeService, jdbcTemplate, historyService);
+                    //空就没有自动通过或默认第二次通过
+                    String auto_state = mm.get("state") == null ? "" : mm.get("state").toString();
+                    if("autopass".equals(auto_state) || "seccondautobypass".equals(auto_state)){
+                        //自动通过或第二次通过才会发送短信
+                        listTemp=(List<Task>)mm.get("data");
+                    }else{
+                        autopassSendMessageFlag=false;
+                    }
                 }
 
-                ProcessUtils.fixedThreadPool.execute(new Runnable() {
+               /* ProcessUtils.fixedThreadPool.execute(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -316,13 +326,26 @@ public class MobileController {
                             e.printStackTrace();
                         }
                     }
-                });
+                });*/
             }else{
                 jdbcTemplate.update("UPDATE ACT_HI_VARINST SET TEXT_='6' WHERE PROC_INST_ID_=? AND NAME_='process_state'",
                         new Object[]{processInstance.getId()});
             }
+            //提交模板数据
+            if("true".equals(cpt)){
+                String s = ProcessUtils.submitCpt(seesionid);
+                if(!"success".equals(s)){
+                    throw new Exception("模板入库错误："+s);
+                }
+            }
             jr.setMsg("success");
             jr.setResult(resultMap);
+            if(autopassSendMessageFlag){
+                ProcessUtils.sendMessage(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",listTemp,processDefinitionID,repositoryService,"autopass");
+            }
+            //下个节点消息
+            ProcessUtils.sendMessage(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",null,
+                    processDefinitionID,repositoryService,"");
         }catch (Exception e){
             if((e.getMessage()+"").indexOf("No outgoing sequence flow of the exclusive gateway")>-1
                     && (e.getMessage()+"").indexOf("could be selected for continuing the process")>-1){
@@ -349,6 +372,8 @@ public class MobileController {
             ,String deployid,HttpServletRequest request) {
         JSONResult jr=new JSONResult();
         String attachmentid="";int update=0;
+        String seesionid= request.getParameter("seesionid");
+        String cpt= request.getParameter("cpt");
         try {
             String userName = LoginService.getInstance().getCurrentUserNameFromRequestCookie(request);
             String userRealName = UserService.getInstance().getUserByUserName(userName).getRealName();
@@ -364,6 +389,13 @@ public class MobileController {
                             new Object[]{new Date(),PreventXSS.delHTMLTag(commentinfo),requestid});
                 }
                 if(update>0) {
+                    //提交模板数据
+                    if("true".equals(cpt)){
+                        String s = ProcessUtils.submitCpt(seesionid);
+                        if(!"success".equals(s)){
+                            throw new Exception("模板入库错误："+s);
+                        }
+                    }
                     jr.setMsg("success");
                 }
                 else {
@@ -379,6 +411,13 @@ public class MobileController {
                 update=jdbcTemplate.update(sql,new Object[]{ProcessUtils.getUUID(),userName,userRealName,new Date(),2,taskName,PreventXSS.delHTMLTag(commentinfo),
                         attachmentid,requestid,reportName,deployid,proname});
                 if(update>0) {
+                    //提交模板数据
+                    if("true".equals(cpt)){
+                        String s = ProcessUtils.submitCpt(seesionid);
+                        if(!"success".equals(s)){
+                            throw new Exception("模板入库错误："+s);
+                        }
+                    }
                     jr.setMsg("success");
                 }
                 else {
@@ -918,6 +957,7 @@ public class MobileController {
         String attachmentid = "";
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
         String type="";
+        String cpt= request.getParameter("cpt");
         try {
             String userName=LoginService.getInstance().getCurrentUserNameFromRequestCookie(request);
             String userRealName=UserService.getInstance().getUserByUserName(userName).getRealName();
@@ -940,6 +980,9 @@ public class MobileController {
                         new Object[]{ ProcessUtils.getUUID(),proInstanceId,taskid,userName,userRealName,new Date(),7,task.getName(),PreventXSS.delHTMLTag(commentinfo),attachmentid,taskEntity.getFormKey()});
 
                 ProcessInstance proInstance = runtimeService.createProcessInstanceQuery().processInstanceId(proInstanceId).singleResult();
+                boolean autopassSendMessageFlag=true;
+                List<Task> listTemp=null;
+                Map<String,String> para=new HashMap<>();
                 if(proInstance==null){
                     jdbcTemplate.update("UPDATE ACT_HI_VARINST SET TEXT_='6' WHERE PROC_INST_ID_=? AND NAME_='process_state'",
                             new Object[]{proInstanceId});
@@ -948,7 +991,6 @@ public class MobileController {
                     Object proDueTime = runtimeService.getVariable(proInstance.getId(), "proDueTime");
 
                     //推送消息
-                    Map<String,String> para=new HashMap<>();
                     HistoricProcessInstance proInstanceHis = historyService.createHistoricProcessInstanceQuery().
                             processInstanceId(proInstance.getId()).singleResult();
                     User userByUserName = UserService.getInstance().getUserByUserName(proInstanceHis.getStartUserId());
@@ -973,11 +1015,17 @@ public class MobileController {
 
                     //自动流传与第二次默认通过
                     if(!"parallel".equals(type) && !"sequential".equals(type)){
-                        ProcessUtils.autopass(taskService,proInstance.getId(),repositoryService,
-                                runtimeService,jdbcTemplate,userName,historyService,para,proname);
+                        Map<String, Object> mm = ProcessUtils.autopass(taskService, proInstance.getId(), repositoryService, runtimeService, jdbcTemplate, historyService);
+                        //空就没有自动通过或默认第二次通过
+                        String auto_state = mm.get("state") == null ? "" : mm.get("state").toString();
+                        if("autopass".equals(auto_state) || "seccondautobypass".equals(auto_state)){
+                            //自动通过或第二次通过才会发送短信
+                            listTemp=(List<Task>)mm.get("data");
+                        }else{
+                            autopassSendMessageFlag=false;
+                        }
                     }
-
-                    ProcessUtils.fixedThreadPool.execute(new Runnable() {
+                 /*   ProcessUtils.fixedThreadPool.execute(new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -987,12 +1035,27 @@ public class MobileController {
                                 e.printStackTrace();
                             }
                         }
-                    });
+                    });*/
 
                 }
-
+                //提交模板数据
+                if("true".equals(cpt)){
+                    String s = ProcessUtils.submitCpt(seesionid);
+                    if(!"success".equals(s)){
+                        throw new Exception("模板入库错误："+s);
+                    }
+                }
                 jr.setResult(resultMap);
                 jr.setMsg("success");
+                //流程与模板数据一起成功后才发送消息
+                //自动提醒与第二次通过消息
+                if(autopassSendMessageFlag){
+                    ProcessUtils.sendMessage(taskService,task.getProcessInstanceId(),jdbcTemplate,proname,para,"1",listTemp,
+                            task.getProcessDefinitionId(),repositoryService,"autopass");
+                }
+                //下个节点消息
+                ProcessUtils.sendMessage(taskService,task.getProcessInstanceId(),jdbcTemplate,proname,para,"1",null,
+                        task.getProcessDefinitionId(),repositoryService,"");
             }else{
                 jr.setResult("");
                 jr.setMsg("002");
@@ -1007,7 +1070,6 @@ public class MobileController {
                 jr.setResult(e.getMessage());
                 jr.setMsg("fail");
             }
-
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
         return jr;
@@ -1016,7 +1078,8 @@ public class MobileController {
     //办理人保存
     @RequestMapping(value = "/banliBaoCun")
     @ResponseBody
-    public JSONResult banliBaoCun(String taskid,HttpServletRequest request){
+    @Transactional
+    public JSONResult banliBaoCun(String taskid,HttpServletRequest request,String seesionid,String cpt){
         JSONResult jr=new JSONResult();
         Task task = taskService.createTaskQuery().taskId(taskid).singleResult();
         try {
@@ -1025,6 +1088,13 @@ public class MobileController {
             if(task!=null){
                 jdbcTemplate.update("INSERT INTO PROOPREATEINFO(ID,PROINSTANCEID,TASKID,OPREATENAME,OPREATEREALNAME,OPREATETIME,OPREATETYPE,NODENAME,MYCOMMENT) " +
                         " VALUES(?,?,?,?,?,?,?,?,?)", new Object[]{ProcessUtils.getUUID(), task.getProcessInstanceId(),taskid, userName, userRealName, new Date(),8,task.getName(),""});
+                //提交模板数据
+                if("true".equals(cpt)){
+                    String s = ProcessUtils.submitCpt(seesionid);
+                    if(!"success".equals(s)){
+                        throw new Exception("模板入库错误："+s);
+                    }
+                }
                 jr.setMsg("success");
                 jr.setResult("");
             }
@@ -1038,6 +1108,7 @@ public class MobileController {
         catch ( Exception e){
             jr.setMsg("fail");
             jr.setResult(e.getMessage());
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return  jr;
         }
     }
@@ -1049,13 +1120,13 @@ public class MobileController {
     @RequestMapping("/test")
     @ResponseBody
     public  JSONResult test(HttpServletRequest request){
-        String userName = LoginService.getInstance().getCurrentUserNameFromRequestCookie(request);
+       /* String userName = LoginService.getInstance().getCurrentUserNameFromRequestCookie(request);
         List<HistoricProcessInstance> resultList =
                 historyService.createHistoricProcessInstanceQuery().processInstanceNameLike("%%")
                 .notDeleted().unfinished()
-                .startedBy(userName).orderByProcessInstanceStartTime().desc().list();
+                .startedBy(userName).orderByProcessInstanceStartTime().desc().list();*/
         JSONResult jr=new JSONResult();
-        jr.setResult(resultList);
+        jr.setResult(null);
         return jr;
     }
 

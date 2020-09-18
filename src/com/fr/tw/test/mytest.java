@@ -80,11 +80,8 @@ public class mytest {
             runtimeService.setVariable("50126","process_state","77");
             runtimeService.deleteProcessInstance("50126","adminganyu");*/
            try{
-               Integer a=500;
-               Integer b=499;
-               System.out.println(a==b);
-               System.out.println(a.equals(b));
-               System.out.println(a>b);
+               Map<String,Object> resultMap=new HashMap<>();
+               System.out.println(resultMap.get("123")==null);
            }catch (Exception e){
                System.out.println( e.getMessage());
            }

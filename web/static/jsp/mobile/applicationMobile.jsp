@@ -209,7 +209,10 @@
         //校验成功
         var seesionid=document.getElementById('reportFrame').contentWindow.contentPane.currentSessionID;
         //流程名带参数
-        var proNameParamVaule=document.getElementById('reportFrame').contentWindow.contentPane.curLGP.getCellValue(proNameParam.toUpperCase());
+        var proNameParamVaule="";
+        if(cpt_insert){
+            proNameParamVaule =document.getElementById('reportFrame').contentWindow.contentPane.curLGP.getCellValue(proNameParam.toUpperCase());
+        }
         var form = new FormData();
         // form.append("tiaojian",JSON.stringify(tiaojian_array));
         form.append("commentinfo",$("#commentinfo").val());
@@ -220,6 +223,7 @@
         form.append("processDefinitionID",processDefinitionID);
         form.append("taskid","");
         form.append("seesionid",seesionid);
+        form.append("cpt",cpt_insert);
         mui.showLoading("提交","div");
         $.ajax({
             type: "POST",
@@ -232,9 +236,9 @@
                 mui.hideLoading();
                 if(data.msg==='success'){
                     //提交数据入库
-                    if(cpt_insert){
+                /*    if(cpt_insert){
                         document.getElementById('reportFrame').contentWindow.contentPane.writeReport();
-                    }
+                    }*/
                     mui.alert('提交成功',function(){
                         window.history.go(-1);
                         // window.parent.FS.tabPane.closeActiveTab();
@@ -256,7 +260,11 @@
     function baocunFormInfo1(proNameParam,proname,processDefinitionID,requestid,reportName,depid,taskName,mui,cpt_insert) {
         mui.showLoading("保存","div");
         var form_baocun = new FormData();
-        var proNameParamVaule=document.getElementById('reportFrame').contentWindow.contentPane.curLGP.getCellValue(proNameParam.toUpperCase());
+        var seesionid=document.getElementById('reportFrame').contentWindow.contentPane.currentSessionID;
+        var proNameParamVaule="";
+        if(cpt_insert){
+            proNameParamVaule =document.getElementById('reportFrame').contentWindow.contentPane.curLGP.getCellValue(proNameParam.toUpperCase());
+        }
         form_baocun.append("processDefinitionID",processDefinitionID);
         form_baocun.append("requestid",requestid);
         form_baocun.append("reportName",reportName);
@@ -266,6 +274,8 @@
         form_baocun.append("userName","admin");
         form_baocun.append("userRealName","admin");
         form_baocun.append("commentinfo",$("#commentinfo").val());
+        form_baocun.append("seesionid",seesionid);
+        form_baocun.append("cpt",cpt_insert);
         $.ajax({
             type: "POST",
             data:form_baocun,
@@ -276,9 +286,9 @@
             success: function (data) {
                 mui.hideLoading();
                 if(data.msg==='success'){
-                    if(cpt_insert){
+                   /* if(cpt_insert){
                         document.getElementById('reportFrame').contentWindow.contentPane.writeReport();
-                    }
+                    }*/
                     mui.alert('保存成功，可在待办中查看',"提示",function(){
                         // window.parent.FS.tabPane.closeActiveTab();
                         window.history.go(-1);

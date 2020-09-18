@@ -45,7 +45,7 @@ p{ font-size: 16px;color: #333333;}
 
 .listing{ width: 100%;
      box-sizing: border-box;    float: left; padding: 15px 25px;}
-.listing-title{ font-size: 16px;  color: #333;  font-weight: 500;  }
+.listing-title{ font-size: 16px;  color: #333;  font-weight: 600;  }
 
 .listing-con{ width: 100%; box-sizing: border-box;  }
 .listing-con li{ width: 22%; float: left; margin-left: 3%; height: 40px; line-height: 40px;

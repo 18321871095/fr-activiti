@@ -532,6 +532,7 @@
         form.append("taskid",taskid);
         form.append("proname",proname);
         form.append("seesionid",seesionid);
+        form.append("cpt",cpt_insert);
         //判断是否有附件文件
         if(typeof (fileObj)!="undefined"){
             form.append("file", fileObj);
@@ -547,9 +548,9 @@
             success: function (data) {
                 banli_layer.close(index);
                 if(data.msg==='success'){
-                    if(cpt_insert){
+                  /*  if(cpt_insert){
                         document.getElementById('banlireportFrame').contentWindow.contentPane.writeReport();
-                    }
+                    }*/
                     banli_layer.confirm('提交成功', {
                         btn: ['确定'],
                         offset:'200px'
@@ -578,17 +579,18 @@
     //保存任务
     function reserveTask(taskid,cpt_insert) {
         var index=banli_layer.load(2,{offset:'200px'});
+        var seesionid=document.getElementById('banlireportFrame').contentWindow.contentPane.currentSessionID;
         $.ajax({
             type: "POST",
             dataType: "json",
-            data:{taskid:taskid},
+            data:{taskid:taskid,seesionid:seesionid,cpt:cpt_insert},
             url: "${ctx}/processInfo/banliBaoCun",
             success: function (data) {
                 banli_layer.close(index);
                 if(data.msg==='success'){
-                    if(cpt_insert){
+                 /*   if(cpt_insert){
                         document.getElementById('banlireportFrame').contentWindow.contentPane.writeReport();
-                    }
+                    }*/
                     banli_layer.msg('保存成功',{offset:'200px'});
                 }else if(data.msg==='001'){
                     banli_layer.msg('任务不存在',{offset:'200px'});

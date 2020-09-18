@@ -199,7 +199,10 @@
         //校验成功
         var seesionid=document.getElementById('reportFrame').contentWindow.contentPane.currentSessionID;
         //流程名带参数
-        var proNameParamVaule=document.getElementById('reportFrame').contentWindow.contentPane.curLGP.getCellValue(proNameParam.toUpperCase());
+        var proNameParamVaule="";
+        if(cpt_insert){
+            proNameParamVaule =document.getElementById('reportFrame').contentWindow.contentPane.curLGP.getCellValue(proNameParam.toUpperCase());
+        }
         var fileObj = document.getElementById("file").files[0]; // js 获取文件对象
         var form = new FormData();
         // form.append("tiaojian",JSON.stringify(tiaojian_array));
@@ -213,6 +216,7 @@
         form.append("processDefinitionID",processDefinitionID);
         form.append("taskid","");
         form.append("seesionid",seesionid);
+        form.append("cpt",cpt_insert);
         if(typeof (fileObj)!="undefined"){
             form.append("file", fileObj);
         }
@@ -228,9 +232,9 @@
                 applicationBaoCun_layer.close(index);
                 if(data.msg==='success'){
                     //提交数据入库
-                    if(cpt_insert){
+                  /*  if(cpt_insert){
                         document.getElementById('reportFrame').contentWindow.contentPane.writeReport();
-                    }
+                    }*/
                     applicationBaoCun_layer.confirm('提交成功', {
                         btn: ['确定'],
                         offset:'200px'
@@ -254,7 +258,11 @@
     function baocunFormInfo1(proNameParam,proname,processDefinitionID,requestid,reportName,depid,taskName,applicationBaoCun_layer,cpt_insert) {
         var reserve_idex=applicationBaoCun_layer.load(2,{offset:'200px'});
         var form_baocun = new FormData();
-        var proNameParamVaule=document.getElementById('reportFrame').contentWindow.contentPane.curLGP.getCellValue(proNameParam.toUpperCase());
+        var seesionid=document.getElementById('reportFrame').contentWindow.contentPane.currentSessionID;
+        var proNameParamVaule="";
+        if(cpt_insert){
+            proNameParamVaule =document.getElementById('reportFrame').contentWindow.contentPane.curLGP.getCellValue(proNameParam.toUpperCase());
+        }
         //console.log("proNameParam:"+proNameParam)
         var fileObj_baocun = document.getElementById("file").files[0]; // js 获取文件对象
         form_baocun.append("processDefinitionID",processDefinitionID);
@@ -266,6 +274,8 @@
         /*form_baocun.append("userName",userName);
         form_baocun.append("userRealName",userRealName);*/
         form_baocun.append("commentinfo",$("#commentinfo").val());
+        form_baocun.append("seesionid",seesionid);
+        form_baocun.append("cpt",cpt_insert);
         //判断是否有附件文件
         if(typeof (fileObj_baocun)!="undefined"){
             form_baocun.append("file", fileObj_baocun);
@@ -280,9 +290,9 @@
             success: function (data) {
                 applicationBaoCun_layer.close(reserve_idex);
                 if(data.msg==='success'){
-                    if(cpt_insert){
+                  /*  if(cpt_insert){
                         document.getElementById('reportFrame').contentWindow.contentPane.writeReport();
-                    }
+                    }*/
                     applicationBaoCun_layer.confirm('保存成功，可在待办中查看', {
                         btn: ['确定'],
                         offset:'200px'

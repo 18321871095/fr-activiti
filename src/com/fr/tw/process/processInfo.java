@@ -1,5 +1,8 @@
 package com.fr.tw.process;
 
+import com.fr.cluster.ClusterBridge;
+import com.fr.cluster.core.ClusterNode;
+import com.fr.data.DefinedSubmitJob;
 import com.fr.decision.authority.data.User;
 import com.fr.decision.webservice.bean.user.UserDetailInfoBean;
 import com.fr.decision.webservice.v10.login.LoginService;
@@ -7,14 +10,22 @@ import com.fr.decision.webservice.v10.user.UserService;
 import com.fr.json.JSON;
 import com.fr.json.JSONException;
 import com.fr.json.JSONObject;
+import com.fr.main.TemplateWorkBook;
+import com.fr.main.workbook.WriteWorkBook;
 import com.fr.parser.FRLexer;
 import com.fr.parser.FRParser;
 import com.fr.plugin.chart.gantt.data.chartdata.Process;
+import com.fr.report.write.SubmitHelper;
 import com.fr.stable.script.Expression;
 import com.fr.tw.test.backtest;
 import com.fr.tw.test.task;
 import com.fr.tw.util.*;
 import com.fr.web.core.A.E;
+import com.fr.web.core.ReportSessionIDInfor;
+import com.fr.web.core.ReportWebUtils;
+import com.fr.web.core.SessionPoolManager;
+import com.fr.web.core.WidgetSessionIDInfor;
+import com.fr.web.session.SessionIDInfo;
 import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
 import org.activiti.bpmn.model.*;
 import org.activiti.engine.*;
@@ -55,12 +66,14 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import sun.rmi.runtime.Log;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -777,9 +790,52 @@ public class processInfo {
 
     @RequestMapping(value = "/test1")
     @ResponseBody
-    public String test1() throws Exception {
-        StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory();
-        Scheduler scheduler = stdSchedulerFactory.getScheduler();
+    public String test1(HttpServletRequest request) throws Exception {
+      /*  String sessionID= request.getParameter("seesionid");
+        System.out.println("seesionid:"+sessionID);*/
+/*        SessionIDInfo sessionIDInfor1 = SessionPoolManager.getSessionIDInfor(sessionID, SessionIDInfo.class);
+        WidgetSessionIDInfor sessionIDInfor2 = SessionPoolManager.getSessionIDInfor(sessionID, WidgetSessionIDInfor.class);*/
+
+      //  SessionIDInfo sessionIDInfor = SessionPoolManager.getSessionIDInfor(sessionID, SessionIDInfo.class);
+
+
+
+        return "success";
+
+
+        //InetAddress inet = InetAddress.getLocalHost();
+        //System.out.println("本机的ip=" + inet.getHostAddress());
+        //System.out.println("端口号："+ request.getServerPort());
+       /* int benji_port=request.getLocalPort();//取得服务器端口
+        String benji_ip = inet.getHostAddress();
+
+        String fangwen_port="";
+        if("80".equals(benji_port+"")){
+            fangwen_port="8080";
+        }else{
+            fangwen_port="80";
+        }
+        System.out.println("本地端口："+benji_port);*/
+        /*List<ClusterNode> clusterNodes = ClusterBridge.getView().listNodes(null);
+        for (ClusterNode clusterNode : clusterNodes) {
+            System.out.println( "ip:"+clusterNode.getIP());
+            System.out.println( "port:"+clusterNode.getHttpPort());
+            if(){
+
+            }
+        }*/
+
+      /*  RestTemplate restTemplate=new RestTemplate();
+       if("80".equals(fangwen_port)){*/
+          /* String url="http://" + benji_ip + ":" + fangwen_port + "/webroot/processInfo/test1";
+           System.out.println("端口:"+benji_port+"访问URL："+url+"，开始访问");
+           String forObject = restTemplate.getForObject(url, String.class);
+           System.out.println("端口:"+benji_port+"访问URL："+url+"，后获取的结果："+forObject);*/
+      // }
+
+
+      /*  StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory();
+        Scheduler scheduler = stdSchedulerFactory.getScheduler();*/
         /*
             * STATE_BLOCKED 4 阻塞
             STATE_COMPLETE 2 完成
@@ -791,8 +847,9 @@ public class processInfo {
 
 
 
-        System.out.println(scheduler.checkExists(JobKey.jobKey("process:31:307507_cronJob")));
+       // System.out.println(scheduler.checkExists(JobKey.jobKey("process:31:307507_cronJob")));
        // System.out.println(scheduler.getTriggerState(trigger.getKey()));
+/*
 
         List<JobExecutionContext> currentlyExecutingJobs = scheduler.getCurrentlyExecutingJobs();
         for(JobExecutionContext jb:currentlyExecutingJobs){
@@ -804,12 +861,13 @@ public class processInfo {
             System.out.println(scheduler.checkExists(jobDetail.getKey()));
             System.out.println(scheduler.getTriggerState(trigger.getKey()));
         }
+*/
 
      /*   System.out.println(scheduler.checkExists(jobDetail.getKey()));
         System.out.println(jobDetail.getKey());
         System.out.println(scheduler.getTriggerState(cronTrigger.getKey()));
         System.out.println(cronTrigger.getKey());*/
-        return "";
+       // return benji_ip;
 
     }
 
@@ -1292,6 +1350,7 @@ public class processInfo {
         String reportName= request.getParameter("reportName");
         String taskid= request.getParameter("taskid");
         String seesionid= request.getParameter("seesionid");
+        String cpt= request.getParameter("cpt");
         String attachmentid="";
         String startTime="";
         String type="";
@@ -1345,40 +1404,53 @@ public class processInfo {
             new Object[]{ProcessUtils.getUUID(),processInstance.getId(),temp_taskid,username,userRealName,new Date(),1,temp_applicationNodeName,commentinfo,attachmentid,taskEntity.getFormKey(),proname});
 
           ProcessInstance pro = runtimeService.createProcessInstanceQuery().processInstanceId(processInstance.getId()).singleResult();
+          boolean autopassSendMessageFlag=true;
+          List<Task> listTemp=null;
+          Map<String,String> para=new HashMap<>();
             if(pro!=null){
                 //自动流传与第二次默认通过
                 Object proDueTime = runtimeService.getVariable(pro.getId(), "proDueTime");
                 //发送消息
-                Map<String,String> para=new HashMap<>();
+
                 para.put("startPeople",userRealName);
                 para.put("startTime",startTime);
-
                 para.put("proDueTime",proDueTime==null?"":proDueTime.toString());
                 para.put("shenheTime",startTime);
 
                 if(!"parallel".equals(type) && !"sequential".equals(type)){
-                    ProcessUtils.autopass(taskService,processInstance.getId(),repositoryService,
-                            runtimeService,jdbcTemplate,username,historyService,para,proname);
-                }
-
-                ProcessUtils.fixedThreadPool.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            sendMessage.getSendMessageUser(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",null,
-                                    processDefinitionID,repositoryService,"");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                    Map<String, Object> mm = ProcessUtils.autopass(taskService, processInstance.getId(), repositoryService, runtimeService, jdbcTemplate, historyService);
+                    //空就没有自动通过或默认第二次通过
+                    String auto_state = mm.get("state") == null ? "" : mm.get("state").toString();
+                    if("autopass".equals(auto_state) || "seccondautobypass".equals(auto_state)){
+                        //自动通过或第二次通过才会发送短信
+                        listTemp=(List<Task>)mm.get("data");
+                    }else{
+                        autopassSendMessageFlag=false;
                     }
-                });
-
+                }
             }else{
                 jdbcTemplate.update("UPDATE ACT_HI_VARINST SET TEXT_='6' WHERE PROC_INST_ID_=? AND NAME_='process_state'",
                         new Object[]{processInstance.getId()});
             }
+            //提交模板数据
+            if("true".equals(cpt)){
+                String s = ProcessUtils.submitCpt(seesionid);
+                if(!"success".equals(s)){
+                    throw new Exception("模板入库错误："+s);
+                }
+            }
             jr.setMsg("success");
             jr.setResult(resultMap);
+            //流程与模板数据一起成功后才发送消息
+            //自动提醒与第二次通过消息
+            if(autopassSendMessageFlag){
+                ProcessUtils.sendMessage(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",listTemp,processDefinitionID,repositoryService,"autopass");
+            }
+            //下个节点消息
+            ProcessUtils.sendMessage(taskService,processInstance.getId(),jdbcTemplate,proname,para,"1",null,
+                    processDefinitionID,repositoryService,"");
+            /*sendMessage.getSendMessageUser(taskService,processInstanceId,jdbcTemplate,proname,para,"1",null,
+                    processDefinitionID,repositoryService,"");*/
         }catch (Exception e){
             if((e.getMessage()+"").indexOf("No outgoing sequence flow of the exclusive gateway")>-1
                     && (e.getMessage()+"").indexOf("could be selected for continuing the process")>-1){
@@ -1536,6 +1608,7 @@ public class processInfo {
         String attachmentid = "";
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
         String type="";
+        String cpt= request.getParameter("cpt");
         try {
             String userName=LoginService.getInstance().getCurrentUserNameFromRequestCookie(request);
             String userRealName=UserService.getInstance().getUserByUserName(userName).getRealName();
@@ -1562,15 +1635,16 @@ public class processInfo {
                       new Object[]{ ProcessUtils.getUUID(),proInstanceId,taskid,userName,userRealName,new Date(),7,task.getName(),PreventXSS.delHTMLTag(commentinfo),attachmentid,taskEntity.getFormKey()});
 
               ProcessInstance proInstance = runtimeService.createProcessInstanceQuery().processInstanceId(proInstanceId).singleResult();
+              boolean autopassSendMessageFlag=true;
+              List<Task> listTemp=null;
+              Map<String,String> para=new HashMap<>();
               if(proInstance==null){
                   jdbcTemplate.update("UPDATE ACT_HI_VARINST SET TEXT_='6' WHERE PROC_INST_ID_=? AND NAME_='process_state'",
                           new Object[]{proInstanceId});
               }else {
                   runtimeService.setVariable(proInstance.getId(),"process_state","1");
                   Object proDueTime = runtimeService.getVariable(proInstance.getId(), "proDueTime");
-
                   //推送消息
-                  Map<String,String> para=new HashMap<>();
                   HistoricProcessInstance proInstanceHis = historyService.createHistoricProcessInstanceQuery().
                           processInstanceId(proInstance.getId()).singleResult();
                   User userByUserName = UserService.getInstance().getUserByUserName(proInstanceHis.getStartUserId());
@@ -1595,11 +1669,18 @@ public class processInfo {
 
                   //自动流传与第二次默认通过
                   if(!"parallel".equals(type) && !"sequential".equals(type)){
-                      ProcessUtils.autopass(taskService,proInstance.getId(),repositoryService,
-                              runtimeService,jdbcTemplate,userName,historyService,para,proname);
+                      Map<String, Object> mm = ProcessUtils.autopass(taskService, proInstance.getId(), repositoryService, runtimeService, jdbcTemplate, historyService);
+                      //空就没有自动通过或默认第二次通过
+                      String auto_state = mm.get("state") == null ? "" : mm.get("state").toString();
+                      if("autopass".equals(auto_state) || "seccondautobypass".equals(auto_state)){
+                          //自动通过或第二次通过才会发送短信
+                          listTemp=(List<Task>)mm.get("data");
+                      }else{
+                          autopassSendMessageFlag=false;
+                      }
                   }
 
-                  ProcessUtils.fixedThreadPool.execute(new Runnable() {
+                 /* ProcessUtils.fixedThreadPool.execute(new Runnable() {
                       @Override
                       public void run() {
                           try {
@@ -1610,12 +1691,28 @@ public class processInfo {
                               e.printStackTrace();
                           }
                       }
-                  });
+                  });*/
 
               }
-
+              //提交模板数据
+              if("true".equals(cpt)){
+                  String s = ProcessUtils.submitCpt(seesionid);
+                  if(!"success".equals(s)){
+                      throw new Exception("模板入库错误："+s);
+                  }
+              }
               jr.setResult(resultMap);
               jr.setMsg("success");
+              //流程与模板数据一起成功后才发送消息
+              //自动提醒与第二次通过消息
+              if(autopassSendMessageFlag){
+                  ProcessUtils.sendMessage(taskService,task.getProcessInstanceId(),jdbcTemplate,proname,para,"1",listTemp,
+                          task.getProcessDefinitionId(),repositoryService,"autopass");
+              }
+              //下个节点消息
+              ProcessUtils.sendMessage(taskService,task.getProcessInstanceId(),jdbcTemplate,proname,para,"1",null,
+                      task.getProcessDefinitionId(),repositoryService,"");
+
           }else{
               jr.setResult("");
               jr.setMsg("002");
@@ -2496,6 +2593,8 @@ public class processInfo {
             ,String deployid,HttpServletRequest request) {
         JSONResult jr=new JSONResult();
         String attachmentid="";int update=0;
+        String seesionid= request.getParameter("seesionid");
+        String cpt= request.getParameter("cpt");
         try {
             String userName = LoginService.getInstance().getCurrentUserNameFromRequestCookie(request);
             String userRealName = UserService.getInstance().getUserByUserName(userName).getRealName();
@@ -2511,6 +2610,13 @@ public class processInfo {
                             new Object[]{new Date(),commentinfo,requestid});
                 }
                 if(update>0) {
+                    //提交模板数据
+                    if("true".equals(cpt)){
+                        String s = ProcessUtils.submitCpt(seesionid);
+                        if(!"success".equals(s)){
+                            throw new Exception("模板入库错误："+s);
+                        }
+                    }
                     jr.setMsg("success");
                 }
                 else {
@@ -2526,6 +2632,13 @@ public class processInfo {
                 update=jdbcTemplate.update(sql,new Object[]{ProcessUtils.getUUID(),userName,userRealName,new Date(),2,PreventXSS.delHTMLTag(taskName),PreventXSS.delHTMLTag(commentinfo),
                         attachmentid,requestid,reportName,deployid,proname});
                 if(update>0) {
+                    //提交模板数据
+                    if("true".equals(cpt)){
+                        String s = ProcessUtils.submitCpt(seesionid);
+                        if(!"success".equals(s)){
+                            throw new Exception("模板入库错误："+s);
+                        }
+                    }
                     jr.setMsg("success");
                 }
                 else {
@@ -2548,7 +2661,8 @@ public class processInfo {
     //办理人保存
     @RequestMapping(value = "/banliBaoCun")
     @ResponseBody
-    public JSONResult banliBaoCun(String taskid,HttpServletRequest request){
+    @Transactional
+    public JSONResult banliBaoCun(String taskid,HttpServletRequest request,String seesionid,String cpt){
         JSONResult jr=new JSONResult();
         Task task = taskService.createTaskQuery().taskId(taskid).singleResult();
         try {
@@ -2557,6 +2671,13 @@ public class processInfo {
             if(task!=null){
                 jdbcTemplate.update("INSERT INTO proopreateinfo(id,proInstanceId,taskid,opreateName,opreateRealName,opreateTime,opreateType,nodeName,mycomment) " +
                         " VALUES(?,?,?,?,?,?,?,?,?)", new Object[]{ProcessUtils.getUUID(), task.getProcessInstanceId(),taskid, userName, userRealName, new Date(),8,task.getName(),""});
+                //提交模板数据
+                if("true".equals(cpt)){
+                    String s = ProcessUtils.submitCpt(seesionid);
+                    if(!"success".equals(s)){
+                        throw new Exception("模板入库错误："+s);
+                    }
+                }
                 jr.setMsg("success");
                 jr.setResult("");
             }
@@ -2570,6 +2691,7 @@ public class processInfo {
         catch ( Exception e){
             jr.setMsg("fail");
             jr.setResult(e.getMessage());
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return  jr;
         }
     }

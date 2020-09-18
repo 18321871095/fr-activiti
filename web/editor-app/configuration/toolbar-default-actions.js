@@ -371,7 +371,7 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
             editorLayer.alert('保存成功,可在模型列表中查看',{offset:'200px',icon: 1},function(index) {
                // console.log("url:"+orign+ result+"/"+"static/jsp/adminjsp/proDeployInfo.jsp")
                 window.parent.FS.tabPane.closeActiveTab();
-                window.parent.FS.tabPane.addItem({title:"部署列表",src:orign+ result+"/"+"static/jsp/adminjsp/proDeployInfo.jsp"});
+               // window.parent.FS.tabPane.addItem({title:"部署列表",src:orign+ result+"/"+"static/jsp/adminjsp/proDeployInfo.jsp"});
 
                // window.location.href=orign+ result+"/"+"static/jsp/adminjsp/proDeployInfo.jsp";
             });

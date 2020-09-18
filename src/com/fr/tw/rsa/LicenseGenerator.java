@@ -11,14 +11,6 @@ public class LicenseGenerator {
      * serial：由客户提供
      * timeEnd：过期时间
      */
-/*
-    private static String licensestatic = "serial=jh;" +
-            "timeEnd=1404057600000";
-*/
-
-/*    private static final String publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCaa8y9g+ioR2OSs8njT5uCGWm0YmOA1elSu/P5\n"
-            + "D3XYPCHsUPab74V5Og+NEZeTk9/LtG+jPSpKekTWm67gS2lQYWoygTwnoWsr4woaqNXmWw7L8Ty0\n"
-            + "LQFTojZgyynvu2RSIJp4c76z6SV/khiP/ireGtt8uzXPswPO5uaPU38tQQIDAQAB";*/
 
     /**
      * RSA算法

@@ -8,7 +8,7 @@
 <html>
 <head>
     <link rel="stylesheet" href="${ctx}/static/layui/css/layui.css">
-    <link rel="stylesheet" href="${ctx}/static/css/startProcess.css?v=1">
+    <link rel="stylesheet" href="${ctx}/static/css/startProcess.css?v=2">
     <style>
         input{ border: none; outline: none; box-shadow: none;}
         .clearfix::after{
@@ -81,7 +81,7 @@ position: absolute; left: -10px; top: -10px; color: #fff;">
                                     " <ul id="+i+" class=\"listing-con\"> </ul> </div>");
                                 for(var j=0;j<data.result[i].proLists.length;j++){
                                     $("#"+i).append(
-                                        "<li name='123'><a href=\"#\" name='tiaozhuan' >"+data.result[i].proLists[j].deName.replace("_","")+
+                                        "<li name='123'><a href=\"#\" name='tiaozhuan' >"+showShortName(data.result[i].proLists[j].deName.replace("_",""))+
                                         "<input  type='hidden' value="+data.result[i].proLists[j].depid+" >"+
                                         "<input  type='hidden' value="+data.result[i].proLists[j].deName+" >"+
                                         "<input  type='hidden' value="+data.result[i].proLists[j].processDefinitionID+" >" +
@@ -170,49 +170,60 @@ position: absolute; left: -10px; top: -10px; color: #fff;">
 
 
             $("#searchPro").click(function () {
-                var name=$("#proName").val();
-                var result=[];
-                for(var i=0;i<proData.length;i++){
-                    var flag=false;
-                    var temp=[];
-                    var temp_classify={};
-                    for(var j=0;j<proData[i].proLists.length;j++){
-                        var deName=proData[i].proLists[j].deName;
-                        if(deName.indexOf(name)>-1){
-                            flag=true;
-                            temp.push(proData[i].proLists[j]);
+                var index=layer.load(2,{offset:'200px'});
+                setTimeout(function () {
+                    layer.close(index);
+                    var name=$("#proName").val();
+                    var result=[];
+                    for(var i=0;i<proData.length;i++){
+                        var flag=false;
+                        var temp=[];
+                        var temp_classify={};
+                        for(var j=0;j<proData[i].proLists.length;j++){
+                            var deName=proData[i].proLists[j].deName;
+                            if(deName.indexOf(name)>-1){
+                                flag=true;
+                                temp.push(proData[i].proLists[j]);
+                            }
+                        }
+                        if(flag){
+                            temp_classify["proclassify"]=proData[i].proclassify;
+                            temp_classify["proLists"]=temp;
+                            result.push(temp_classify);
                         }
                     }
-                    if(flag){
-                        temp_classify["proclassify"]=proData[i].proclassify;
-                        temp_classify["proLists"]=temp;
-                        result.push(temp_classify);
-                    }
-                }
-                $("#content").empty();
-                if(result.length>0){
-                    for(var i1=0;i1<result.length;i1++){
-                        $("#content").append("<div class='listing'> <h4 class=\"listing-title\">"+result[i1].proclassify+"</h4>" +
-                            " <ul id="+i1+" class=\"listing-con\"> </ul> </div>");
-                        for(var j1=0;j1<result[i1].proLists.length;j1++){
-                            $("#"+i1).append(
-                                "<li name='123'><a href=\"#\" name='tiaozhuan' >"+result[i1].proLists[j1].deName.replace("_","")+
-                                "<input  type='hidden' value="+result[i1].proLists[j1].depid+" >"+
-                                "<input  type='hidden' value="+result[i1].proLists[j1].deName+" >"+
-                                "<input  type='hidden' value="+result[i1].proLists[j1].processDefinitionID+" >" +
-                                "<input  type='hidden' value="+result[i1].proLists[j1].deNameParam+" >" +
-                                "</a></li>");
+                    $("#content").empty();
+                    if(result.length>0){
+                        for(var i1=0;i1<result.length;i1++){
+                            $("#content").append("<div class='listing'> <h4 class=\"listing-title\">"+result[i1].proclassify+"</h4>" +
+                                " <ul id="+i1+" class=\"listing-con\"> </ul> </div>");
+                            for(var j1=0;j1<result[i1].proLists.length;j1++){
+                                $("#"+i1).append(
+                                    "<li name='123'><a href=\"#\" name='tiaozhuan' >"+showShortName(result[i1].proLists[j1].deName.replace("_",""))+
+                                    "<input  type='hidden' value="+result[i1].proLists[j1].depid+" >"+
+                                    "<input  type='hidden' value="+result[i1].proLists[j1].deName+" >"+
+                                    "<input  type='hidden' value="+result[i1].proLists[j1].processDefinitionID+" >" +
+                                    "<input  type='hidden' value="+result[i1].proLists[j1].deNameParam+" >" +
+                                    "</a><span name='setLevel' class='layui-icon layui-icon-set-fill'></span></li>");
+                            }
                         }
+                    }else{
+                        $("#content").append("<div style='width:200px;height:200px;margin: 200 auto;'>" +
+                            "<img src='${ctx}/static/images/noProList.png' width='100%' height='100%'></div>")
                     }
-                }else{
-                    $("#content").append("<div style='width:200px;height:200px;margin: 200 auto;'>" +
-                        "<img src='${ctx}/static/images/noProList.png' width='100%' height='100%'></div>")
-                }
+                },1000);
             });
 
         });
 
     });
 
+    function showShortName(name) {
+        if(name.length<=12){
+            return name;
+        }else{
+            return name.substring(0,12)+"...";
+        }
+    }
 </script>
 </html>

@@ -574,6 +574,7 @@
         form.append("taskid",taskid);
         form.append("proname",proname);
         form.append("seesionid",seesionid);
+        form.append("cpt",cpt_insert);
         form.append("commentinfo",$("#banlicomment").val());
         $.ajax({
             type: "POST",
@@ -585,9 +586,9 @@
             success: function (data) {
                 mui.hideLoading();
                 if(data.msg==='success'){
-                    if(cpt_insert){
+                   /* if(cpt_insert){
                         document.getElementById('banlireportFrame').contentWindow.contentPane.writeReport();
-                    }
+                    }*/
                     mui.alert('提交成功',function(){
                         window.history.go(-1);
                     });
@@ -609,17 +610,18 @@
 
     function bancunTaskMobile(taskid,mui,cpt_insert) {
         mui.showLoading("保存中","div");
+        var seesionid=document.getElementById('banlireportFrame').contentWindow.contentPane.currentSessionID;
         $.ajax({
             type: "POST",
             dataType: "json",
-            data:{taskid:taskid},
+            data:{taskid:taskid,seesionid:seesionid,cpt:cpt_insert},
             url: "${ctx}/mobile/banliBaoCun",
             success: function (data) {
                 mui.hideLoading();
                 if(data.msg==='success'){
-                    if(cpt_insert){
+                   /* if(cpt_insert){
                         document.getElementById('banlireportFrame').contentWindow.contentPane.writeReport();
-                    }
+                    }*/
                     mui.alert('保存成功');
                 }else if(data.msg==='001'){
                     mui.alert('任务不存在');

@@ -248,6 +248,8 @@ public class initDataBaseSchemas implements InitializingBean, ServletContextAwar
     public void initSheduler() throws Exception {
         Date currentTime=new Date();
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory();
+        Scheduler scheduler = stdSchedulerFactory.getScheduler();
         List<ProcessDefinition> list = repositoryService.createProcessDefinitionQuery().list();
         for(ProcessDefinition p:list){
             if(p.getDescription()!=null){
@@ -268,15 +270,15 @@ public class initDataBaseSchemas implements InitializingBean, ServletContextAwar
                                 withSchedule(CronScheduleBuilder.cronSchedule(json.get("cron").toString())).build();
                         Date startTime = cronTrigger.getStartTime();
                         String nextTime=sdf.format(cronTrigger.getFireTimeAfter(startTime));
-                        StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory();
-                        Scheduler scheduler = stdSchedulerFactory.getScheduler();
-                        scheduler.scheduleJob(jobDetail,cronTrigger);
-                        scheduler.start();
-                        json.put("state","1");
-                        json.put("nextTime",nextTime);
+                        if(!scheduler.checkExists(jobDetail.getKey())){
+                            scheduler.scheduleJob(jobDetail,cronTrigger);
+                            scheduler.start();
+                            json.put("state","1");
+                            json.put("nextTime",nextTime);
+                            jt.update("update act_re_procdef set DESCRIPTION_=? where ID_=?",new Object[]{json.toString(),
+                                    p.getId()});
+                        }
 
-                        jt.update("update act_re_procdef set DESCRIPTION_=? where ID_=?",new Object[]{json.toString(),
-                                p.getId()});
                     }
                 }
 
@@ -305,11 +307,11 @@ public class initDataBaseSchemas implements InitializingBean, ServletContextAwar
                             .withIdentity(processInstanceId+"_"+activitiId+"_cronTrigger_sendMessage")
                             .startAt(duedate)
                             .build();
-                    StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory();
-                    Scheduler scheduler = null;
-                    scheduler = stdSchedulerFactory.getScheduler();
-                    scheduler.scheduleJob(jobDetail,cronTrigger);
-                    scheduler.start();
+                    if(!scheduler.checkExists(jobDetail.getKey())){
+                        scheduler.scheduleJob(jobDetail,cronTrigger);
+                        scheduler.start();
+                    }
+
                 }
             }else if("allTime".equals(type)){
                 Date duedate = sdf.parse(list1.get(i).get("duedate").toString());
@@ -332,11 +334,10 @@ public class initDataBaseSchemas implements InitializingBean, ServletContextAwar
                             .withIdentity(prodefineid+"_"+processInstanceId+"_cronTrigger_proTime")
                             .startAt(duedate)
                             .build();
-                    StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory();
-                    Scheduler scheduler = stdSchedulerFactory.getScheduler();
-                    scheduler.scheduleJob(jobDetail,cronTrigger);
-                    scheduler.start();
-
+                    if(!scheduler.checkExists(jobDetail.getKey())){
+                        scheduler.scheduleJob(jobDetail,cronTrigger);
+                        scheduler.start();
+                    }
                 }
             }
         }
